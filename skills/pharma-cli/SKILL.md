@@ -1,11 +1,11 @@
 ---
-name: pharma-cli
-description: Use when user needs statistical analysis, SPC control charts, process capability, hypothesis testing, regression, DOE, outlier detection, or trend analysis. Triggers: 统计分析, 控制图, 过程能力, t检验, ANOVA, 回归, DOE, 正态性检验, 异常值, 趋势分析, SPC, Cp, Cpk, capability, normality, regression, correlation, outlier.
+name: stats-cli
+description: Use when user needs statistical analysis, SPC control charts, process capability, hypothesis testing, regression, DOE, outlier detection, or trend analysis. Triggers: 统计分析, 控制图, 过程能力, t检验, ANOVA, 回归, DOE, 正态性检验, 异常值, 趋势分析, SPC, Cp, Cpk, capability, normality, regression, correlation, outlier, quality, manufacturing.
 ---
 
-# pharma-cli
+# stats-cli
 
-AI-agent-friendly statistical analysis CLI powered by R.
+AI-friendly statistical analysis CLI for manufacturing.
 
 ## Prerequisites
 
@@ -20,87 +20,87 @@ install.packages(c("jsonlite", "qcc", "nortest", "car", "MASS", "base64enc"), re
 ## Installation
 
 ```bash
-pip install pharma-cli
+pip install stats-cli
 # or
-cd pharma-cli && pip install -e .
+cd stats-cli && pip install -e .
 ```
 
 ## Commands
 
 ### Descriptive Statistics
 ```bash
-pharma-cli descriptive -v 10.2 -v 10.5 -v 10.1 -v 10.3 -v 10.4
-pharma-cli descriptive -f data.csv -c "Column1"
+stats-cli descriptive -v 10.2 -v 10.5 -v 10.1 -v 10.3 -v 10.4
+stats-cli descriptive -f data.csv -c "Column1"
 ```
 Output: mean, median, SD, RSD%, range, quartiles, 95% CI, skewness, kurtosis
 
 ### Normality Tests
 ```bash
-pharma-cli normality -v 10.2 -v 10.5 -v 10.1 -v 10.3 -v 10.4
-pharma-cli normality -f data.txt
+stats-cli normality -v 10.2 -v 10.5 -v 10.1 -v 10.3 -v 10.4
+stats-cli normality -f data.txt
 ```
 Output: Shapiro-Wilk, Anderson-Darling, Lilliefors tests + histogram data + Q-Q plot data
 
 ### Process Capability
 ```bash
-pharma-cli capability -v 10.2 -v 10.5 -v 10.1 --usl 11.0 --lsl 9.0
-pharma-cli capability -f data.csv -c "Concentration" --usl 11.0 --lsl 9.0 --target 10.0
+stats-cli capability -v 10.2 -v 10.5 -v 10.1 --usl 11.0 --lsl 9.0
+stats-cli capability -f data.csv -c "Concentration" --usl 11.0 --lsl 9.0 --target 10.0
 ```
 Output: Cp, Cpk, Pp, Ppk, capability rating
 
 ### Control Charts
 ```bash
-pharma-cli control-chart imr -v 10.2 -v 10.5 -v 10.1 -v 10.3 -v 10.4
-pharma-cli control-chart xbar -f data.csv -c "measurement" --subgroup-size 5
+stats-cli control-chart imr -v 10.2 -v 10.5 -v 10.1 -v 10.3 -v 10.4
+stats-cli control-chart xbar -f data.csv -c "measurement" --subgroup-size 5
 ```
 Chart types: `xbar`, `r`, `imr`, `p`, `np`, `c`, `u`
 Output: center, UCL, LCL, out-of-control points, Western Electric rule violations
 
 ### t-Tests
 ```bash
-pharma-cli ttest one_sample -v 10.2 -v 10.5 -v 10.1 --mu 10.0
-pharma-cli ttest two_sample -v 10.2 -v 10.5 -v2 11.3 -v2 11.5
-pharma-cli ttest paired -v 10.2 -v 10.5 -v2 10.8 -v2 10.9
+stats-cli ttest one_sample -v 10.2 -v 10.5 -v 10.1 --mu 10.0
+stats-cli ttest two_sample -v 10.2 -v 10.5 -v2 11.3 -v2 11.5
+stats-cli ttest paired -v 10.2 -v 10.5 -v2 10.8 -v2 10.9
 ```
 Output: t-statistic, p-value, significance
 
 ### ANOVA
 ```bash
-pharma-cli anova one_way -g '[10.2,10.5,10.1]' -g '[11.3,11.5,11.1]' -g '[10.8,10.9,10.7]'
+stats-cli anova one_way -g '[10.2,10.5,10.1]' -g '[11.3,11.5,11.1]' -g '[10.8,10.9,10.7]'
 ```
 Output: F-statistic, p-value, significance, Tukey post-hoc (for one-way)
 
 ### Regression
 ```bash
-pharma-cli regression --x 1 --x 2 --x 3 --x 4 --x 5 --y 2.1 --y 3.9 --y 6.2 --y 7.8 --y 10.1 --type linear
+stats-cli regression --x 1 --x 2 --x 3 --x 4 --x 5 --y 2.1 --y 3.9 --y 6.2 --y 7.8 --y 10.1 --type linear
 ```
 Types: `linear`, `quadratic`, `polynomial`
 Output: R-squared, coefficients, p-values
 
 ### Correlation
 ```bash
-pharma-cli correlation --x 1 --x 2 --x 3 --x 4 --x 5 --y 2.1 --y 3.9 --y 6.2 --y 7.8 --y 10.1 --method pearson
+stats-cli correlation --x 1 --x 2 --x 3 --x 4 --x 5 --y 2.1 --y 3.9 --y 6.2 --y 7.8 --y 10.1 --method pearson
 ```
 Methods: `pearson`, `spearman`, `kendall`
 Output: correlation coefficient, p-value, R-squared
 
 ### Outlier Detection
 ```bash
-pharma-cli outlier -v 10.2 -v 10.5 -v 10.1 -v 10.3 -v 15.0 --method grubbs
+stats-cli outlier -v 10.2 -v 10.5 -v 10.1 -v 10.3 -v 15.0 --method grubbs
 ```
 Methods: `grubbs`, `dixon`, `iqr`, `zscore`
 Output: outliers detected, clean data
 
 ### Trend Analysis
 ```bash
-pharma-cli trend -v 10.2 -v 10.5 -v 10.1 -v 10.3 -v 10.4 --test-type cusum --target 10.3
+stats-cli trend -v 10.2 -v 10.5 -v 10.1 -v 10.3 -v 10.4 --test-type cusum --target 10.3
 ```
 Test types: `cusum`, `ewma`, `runs`
 Output: CUSUM values, alarm points, stability assessment
 
 ### Design of Experiments
 ```bash
-pharma-cli doe full_factorial -f '{"name":"Temp","levels":3}' -f '{"name":"Time","levels":2}' -r '[10,12,11,13,12,14]'
+stats-cli doe full_factorial -f '{"name":"Temp","levels":3}' -f '{"name":"Time","levels":2}' -r '[10,12,11,13,12,14]'
 ```
 DOE types: `full_factorial`, `fractional_factorial`, `response_surface`
 Output: design matrix, main effects, ANOVA table
@@ -110,9 +110,9 @@ Output: design matrix, main effects, ANOVA table
 Add `--plot` flag to generate base64-encoded PNG charts:
 
 ```bash
-pharma-cli --plot control-chart imr -v 10.2 -v 10.5 -v 10.1 -v 10.3 -v 10.4
-pharma-cli --plot normality -v 10.2 -v 10.5 -v 10.1 -v 10.3 -v 10.4
-pharma-cli --plot capability -v 10.2 -v 10.5 -v 10.1 --usl 11.0 --lsl 9.0
+stats-cli --plot control-chart imr -v 10.2 -v 10.5 -v 10.1 -v 10.3 -v 10.4
+stats-cli --plot normality -v 10.2 -v 10.5 -v 10.1 -v 10.3 -v 10.4
+stats-cli --plot capability -v 10.2 -v 10.5 -v 10.1 --usl 11.0 --lsl 9.0
 ```
 
 The `plot` field in JSON output contains the base64-encoded PNG image.
@@ -145,31 +145,31 @@ All commands output JSON to stdout:
 ### 1. Data Quality Check
 ```bash
 # Check for outliers
-pharma-cli outlier -f data.csv -c "measurement" --method grubbs
+stats-cli outlier -f data.csv -c "measurement" --method grubbs
 
 # Check normality
-pharma-cli normality -f data.csv -c "measurement"
+stats-cli normality -f data.csv -c "measurement"
 ```
 
 ### 2. Process Capability Study
 ```bash
 # Descriptive stats
-pharma-cli descriptive -f data.csv -c "measurement"
+stats-cli descriptive -f data.csv -c "measurement"
 
 # Normality check
-pharma-cli normality -f data.csv -c "measurement"
+stats-cli normality -f data.csv -c "measurement"
 
 # Capability analysis
-pharma-cli capability -f data.csv -c "measurement" --usl 11.0 --lsl 9.0
+stats-cli capability -f data.csv -c "measurement" --usl 11.0 --lsl 9.0
 ```
 
 ### 3. SPC Monitoring
 ```bash
 # I-MR chart for individual measurements
-pharma-cli control-chart imr -f data.csv -c "measurement"
+stats-cli control-chart imr -f data.csv -c "measurement"
 
 # X-bar chart for subgroups
-pharma-cli control-chart xbar -f data.csv -c "measurement" --subgroup-size 5
+stats-cli control-chart xbar -f data.csv -c "measurement" --subgroup-size 5
 ```
 
 ## Error Handling

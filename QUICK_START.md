@@ -1,17 +1,17 @@
-# pharma-cli 快速开始指南
+# stats-cli 快速开始指南
 
 ## 一分钟安装
 
 ```bash
-# 1. 安装 pharma-cli
-cd D:/learn/claudecode/pharma-cli
+# 1. 安装 stats-cli
+cd D:/learn/claudecode/stats-cli
 pip install -e .
 
 # 2. 安装 SKILL.md（让 Claude Code 自动发现）
 bash install-skill.sh
 
 # 3. 验证安装
-pharma-cli --version
+stats-cli --version
 ```
 
 ---
@@ -20,63 +20,63 @@ pharma-cli --version
 
 ### 描述性统计
 ```bash
-pharma-cli descriptive -v 10.2 -v 10.5 -v 10.1 -v 10.3 -v 10.4
-pharma-cli descriptive -f data.csv -c "Column1"
+stats-cli descriptive -v 10.2 -v 10.5 -v 10.1 -v 10.3 -v 10.4
+stats-cli descriptive -f data.csv -c "Column1"
 ```
 
 ### 正态性检验
 ```bash
-pharma-cli normality -v 10.2 -v 10.5 -v 10.1 -v 10.3 -v 10.4
-pharma-cli normality -f data.csv -c "measurement"
+stats-cli normality -v 10.2 -v 10.5 -v 10.1 -v 10.3 -v 10.4
+stats-cli normality -f data.csv -c "measurement"
 ```
 
 ### 过程能力分析
 ```bash
-pharma-cli capability -v 10.2 -v 10.5 -v 10.1 --usl 11.0 --lsl 9.0
-pharma-cli capability -f data.csv -c "measurement" --usl 11.0 --lsl 9.0
+stats-cli capability -v 10.2 -v 10.5 -v 10.1 --usl 11.0 --lsl 9.0
+stats-cli capability -f data.csv -c "measurement" --usl 11.0 --lsl 9.0
 ```
 
 ### 控制图
 ```bash
-pharma-cli control-chart imr -v 10.2 -v 10.5 -v 10.1 -v 10.3 -v 10.4
-pharma-cli control-chart xbar -f data.csv -c "measurement" --subgroup-size 5
+stats-cli control-chart imr -v 10.2 -v 10.5 -v 10.1 -v 10.3 -v 10.4
+stats-cli control-chart xbar -f data.csv -c "measurement" --subgroup-size 5
 ```
 
 ### t 检验
 ```bash
-pharma-cli ttest one_sample -v 10.2 -v 10.5 -v 10.1 --mu 10.0
-pharma-cli ttest two_sample -v 10.2 -v 10.5 -v2 11.3 -v2 11.5
-pharma-cli ttest paired -v 10.2 -v 10.5 -v2 10.8 -v2 10.9
+stats-cli ttest one_sample -v 10.2 -v 10.5 -v 10.1 --mu 10.0
+stats-cli ttest two_sample -v 10.2 -v 10.5 -v2 11.3 -v2 11.5
+stats-cli ttest paired -v 10.2 -v 10.5 -v2 10.8 -v2 10.9
 ```
 
 ### ANOVA
 ```bash
-pharma-cli anova one_way -g '[10.2,10.5,10.1]' -g '[11.3,11.5,11.1]'
+stats-cli anova one_way -g '[10.2,10.5,10.1]' -g '[11.3,11.5,11.1]'
 ```
 
 ### 回归分析
 ```bash
-pharma-cli regression --x 1 --x 2 --x 3 --y 2 --y 4 --y 6 --type linear
+stats-cli regression --x 1 --x 2 --x 3 --y 2 --y 4 --y 6 --type linear
 ```
 
 ### 相关分析
 ```bash
-pharma-cli correlation --x 1 --x 2 --x 3 --y 2 --y 4 --y 6 --method pearson
+stats-cli correlation --x 1 --x 2 --x 3 --y 2 --y 4 --y 6 --method pearson
 ```
 
 ### 异常值检测
 ```bash
-pharma-cli outlier -v 10.2 -v 10.5 -v 10.1 -v 10.3 -v 15.0 --method grubbs
+stats-cli outlier -v 10.2 -v 10.5 -v 10.1 -v 10.3 -v 15.0 --method grubbs
 ```
 
 ### 趋势分析
 ```bash
-pharma-cli trend -v 10.2 -v 10.5 -v 10.1 -v 10.3 -v 10.4 --test-type cusum --target 10.3
+stats-cli trend -v 10.2 -v 10.5 -v 10.1 -v 10.3 -v 10.4 --test-type cusum --target 10.3
 ```
 
 ### 实验设计
 ```bash
-pharma-cli doe full_factorial -f '{"name":"Temp","levels":3}' -f '{"name":"Time","levels":2}'
+stats-cli doe full_factorial -f '{"name":"Temp","levels":3}' -f '{"name":"Time","levels":2}'
 ```
 
 ---
@@ -87,13 +87,13 @@ pharma-cli doe full_factorial -f '{"name":"Temp","levels":3}' -f '{"name":"Time"
 
 ```bash
 # 控制图
-pharma-cli --plot control-chart imr -v 10.2 -v 10.5 -v 10.1 -v 10.3 -v 10.4
+stats-cli --plot control-chart imr -v 10.2 -v 10.5 -v 10.1 -v 10.3 -v 10.4
 
 # 正态性检验图
-pharma-cli --plot normality -v 10.2 -v 10.5 -v 10.1 -v 10.3 -v 10.4
+stats-cli --plot normality -v 10.2 -v 10.5 -v 10.1 -v 10.3 -v 10.4
 
 # 过程能力图
-pharma-cli --plot capability -v 10.2 -v 10.5 -v 10.1 --usl 11.0 --lsl 9.0
+stats-cli --plot capability -v 10.2 -v 10.5 -v 10.1 --usl 11.0 --lsl 9.0
 ```
 
 图表以 base64 PNG 格式返回，可在 JSON 输出的 `plot` 字段中找到。
@@ -104,11 +104,11 @@ pharma-cli --plot capability -v 10.2 -v 10.5 -v 10.1 --usl 11.0 --lsl 9.0
 
 ### 自动触发
 
-只需用自然语言描述需求，Claude Code 会自动调用 pharma-cli：
+只需用自然语言描述需求，Claude Code 会自动调用 stats-cli：
 
 ```
 用户：帮我分析这个 CSV 文件的过程能力
-Claude Code：[自动调用 pharma-cli capability -f data.csv --usl 11.0 --lsl 9.0]
+Claude Code：[自动调用 stats-cli capability -f data.csv --usl 11.0 --lsl 9.0]
 ```
 
 **触发关键词**：
@@ -127,7 +127,7 @@ Claude Code：[自动调用 pharma-cli capability -f data.csv --usl 11.0 --lsl 9
 
 ```bash
 # 在 Claude Code 终端中
-pharma-cli descriptive -v 10.2 -v 10.5 -v 10.1
+stats-cli descriptive -v 10.2 -v 10.5 -v 10.1
 ```
 
 ---
@@ -144,7 +144,7 @@ measurement
 10.4
 ```
 
-使用：`pharma-cli descriptive -f data.csv -c "measurement"`
+使用：`stats-cli descriptive -f data.csv -c "measurement"`
 
 ### TXT 文件
 ```
@@ -155,14 +155,14 @@ measurement
 10.4
 ```
 
-使用：`pharma-cli descriptive -f data.txt`
+使用：`stats-cli descriptive -f data.txt`
 
 ### JSON 文件
 ```json
 {"values": [10.2, 10.5, 10.1, 10.3, 10.4]}
 ```
 
-使用：`pharma-cli descriptive -f data.json`
+使用：`stats-cli descriptive -f data.json`
 
 ---
 
@@ -184,7 +184,7 @@ install.packages(c("jsonlite", "qcc", "nortest", "car", "MASS", "base64enc"),
 ### SKILL.md 未加载
 ```bash
 # 检查文件位置
-ls -la ~/.claude/skills/data-analysis/pharma-cli/SKILL.md
+ls -la ~/.claude/skills/data-analysis/stats-cli/SKILL.md
 
 # 重新安装
 bash install-skill.sh
@@ -201,7 +201,7 @@ bash install-skill.sh
 
 运行测试：
 ```bash
-cd D:/learn/claudecode/pharma-cli
+cd D:/learn/claudecode/stats-cli
 python -m pytest tests/ -v
 ```
 

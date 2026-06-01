@@ -1,4 +1,4 @@
-# pharma-cli 真实数据测试报告
+# stats-cli 真实数据测试报告
 
 **测试日期**: 2026-06-01
 **测试数据**: 6 个 Excel 文件（制药行业数据）
@@ -176,7 +176,7 @@
 
 ### 4.1 问题 1：异常值检测失败
 
-**现象**：运行 `pharma-cli outlier` 时 R 脚本报错
+**现象**：运行 `stats-cli outlier` 时 R 脚本报错
 **错误信息**：`错误于round(outliers, 4): 数学函数中用了非数值参数`
 **原因**：`outlier.R` 中 `round(outliers, 4)` 在处理空向量时失败
 **修复方案**：添加空向量检查
@@ -191,7 +191,7 @@ outliers = if (length(outliers) > 0) round(outliers, 4) else c()
 
 ### 4.2 问题 2：响应面设计失败
 
-**现象**：运行 `pharma-cli doe response_surface` 时 R 脚本报错
+**现象**：运行 `stats-cli doe response_surface` 时 R 脚本报错
 **错误信息**：`错误于match.names(clabs, names(xi)): 名称同原来已有的名称不相对`
 **原因**：`doe.R` 中 `rbind()` 合并数据框时列名不匹配
 **修复方案**：在 `rbind()` 前为所有数据框设置列名
@@ -219,7 +219,7 @@ design_matrix <- rbind(factorial_points, center_points, axial_points)
 
 ### 5.1 功能覆盖度
 
-| 功能 | JMP/Minitab | pharma-cli | 覆盖度 |
+| 功能 | JMP/Minitab | stats-cli | 覆盖度 |
 |------|-------------|------------|--------|
 | 数据导入 | Excel, CSV, 多种格式 | Excel, CSV, JSON | ✅ 100% |
 | 描述性统计 | 完整 | 完整 | ✅ 100% |
@@ -282,7 +282,7 @@ design_matrix <- rbind(factorial_points, center_points, axial_points)
 
 ### 6.4 总体评价
 
-**pharma-cli 已经是一个功能完整、测试充分、可投入使用的统计分析 CLI 工具**。
+**stats-cli 已经是一个功能完整、测试充分、可投入使用的统计分析 CLI 工具**。
 
 **优势**：
 - 覆盖了 JMP/Minitab 80% 的核心统计功能
@@ -307,7 +307,7 @@ design_matrix <- rbind(factorial_points, center_points, axial_points)
 
 ## 七、GitHub 仓库
 
-**地址**：https://github.com/haowuxiwang/pharma-cli
+**地址**：https://github.com/haowuxiwang/stats-cli
 
 **最新提交**：
 ```

@@ -17,13 +17,17 @@ from cli.validators import (
 
 
 @click.group()
-@click.version_option(version="0.2.0")
+@click.version_option(version="0.3.0")
 @click.option("--plot", "generate_plot", is_flag=True, default=False, help="Generate chart (base64 PNG)")
+@click.option("--interactive", is_flag=True, default=False, help="Generate interactive HTML chart")
+@click.option("--report", is_flag=True, default=False, help="Generate HTML report")
 @click.pass_context
-def main(ctx, generate_plot):
-    """pharma-cli: AI-agent-friendly statistical analysis powered by R."""
+def main(ctx, generate_plot, interactive, report):
+    """stats-cli: AI-friendly statistical analysis CLI for manufacturing."""
     ctx.ensure_object(dict)
     ctx.obj["generate_plot"] = generate_plot
+    ctx.obj["interactive"] = interactive
+    ctx.obj["report"] = report
 
 
 @main.command()
@@ -101,6 +105,16 @@ def control_chart(ctx, chart_type, values, data_file, column, subgroup_size, sam
     if ctx.obj.get("generate_plot"):
         data["generate_plot"] = True
     result = run_r_file("control_chart.R", data)
+
+    # Generate interactive chart if requested
+    if ctx.obj.get("interactive"):
+        from cli.charts import create_control_chart
+        html = create_control_chart(result)
+        chart_file = f"control_chart_{chart_type}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.html"
+        with open(chart_file, 'w', encoding='utf-8') as f:
+            f.write(html)
+        result['interactive_chart'] = chart_file
+
     _output(result)
 
 

@@ -1,4 +1,4 @@
-# pharma-cli 单元测试报告
+# stats-cli 单元测试报告
 
 **测试日期**: 2026-06-01
 **测试环境**: Windows 10, Python 3.11.9, pytest 9.0.2
@@ -276,7 +276,7 @@ def test_process_capability_workflow(self, runner):
 ### 7.1 运行所有测试
 
 ```bash
-cd D:/learn/claudecode/pharma-cli
+cd D:/learn/claudecode/stats-cli
 python -m pytest tests/ -v
 ```
 

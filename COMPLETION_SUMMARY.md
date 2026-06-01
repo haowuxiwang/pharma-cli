@@ -1,4 +1,4 @@
-# pharma-cli 完成总结
+# stats-cli 完成总结
 
 **完成日期**: 2026-06-01
 **版本**: 0.2.0
@@ -81,7 +81,7 @@
 | `tests/test_integration.py` | 集成测试 |
 | `pytest.ini` | pytest 配置 |
 | `requirements-test.txt` | 测试依赖 |
-| `skills/pharma-cli/SKILL.md` | Claude Code 技能定义 |
+| `skills/stats-cli/SKILL.md` | Claude Code 技能定义 |
 | `install-skill.sh` | SKILL.md 安装脚本 |
 | `LICENSE` | MIT 许可证 |
 | `TEST_REPORT.md` | 测试报告 |
@@ -112,7 +112,7 @@
 ```
 ============================= test session starts =============================
 platform win32 -- Python 3.11.9, pytest-9.0.2, pluggy-1.6.0
-rootdir: D:\learn\claudecode\pharma-cli
+rootdir: D:\learn\claudecode\stats-cli
 configfile: pytest.ini
 plugins: cov-7.0.0, mock-3.15.1
 collected 95 items
@@ -152,15 +152,15 @@ TOTAL                        357     43    88%
 ### 4.1 安装
 
 ```bash
-# 1. 安装 pharma-cli
-cd D:/learn/claudecode/pharma-cli
+# 1. 安装 stats-cli
+cd D:/learn/claudecode/stats-cli
 pip install -e .
 
 # 2. 安装 SKILL.md
 bash install-skill.sh
 
 # 3. 验证
-pharma-cli --version
+stats-cli --version
 ```
 
 ### 4.2 在 Claude Code 中使用
@@ -168,19 +168,19 @@ pharma-cli --version
 **方式 1：自动触发**
 ```
 用户：帮我做统计分析
-Claude Code：[自动加载 pharma-cli 技能]
+Claude Code：[自动加载 stats-cli 技能]
 ```
 
 **方式 2：手动调用**
 ```bash
-pharma-cli descriptive -v 10.2 -v 10.5 -v 10.1
-pharma-cli --plot control-chart imr -v 10.2 -v 10.5 -v 10.1
+stats-cli descriptive -v 10.2 -v 10.5 -v 10.1
+stats-cli --plot control-chart imr -v 10.2 -v 10.5 -v 10.1
 ```
 
 ### 4.3 运行测试
 
 ```bash
-cd D:/learn/claudecode/pharma-cli
+cd D:/learn/claudecode/stats-cli
 python -m pytest tests/ -v
 ```
 
@@ -233,7 +233,7 @@ python -m pytest tests/ -v
 
 ## 七、总结
 
-pharma-cli 已经完成了一个**功能完整、测试充分、文档齐全**的统计分析 CLI 工具：
+stats-cli 已经完成了一个**功能完整、测试充分、文档齐全**的统计分析 CLI 工具：
 
 1. **功能完整**：覆盖了 Minitab/JMP 80% 的常用功能
 2. **测试充分**：95 个测试用例，100% 通过率
