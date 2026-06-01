@@ -443,11 +443,11 @@ def trend(values, data_file, column, test_type, target, ewma_lambda):
 
 
 @main.command()
-@click.argument("doe_type", type=click.Choice(["full_factorial", "fractional_factorial", "response_surface"]))
+@click.argument("doe_type", type=click.Choice(["full_factorial", "fractional_factorial", "response_surface", "taguchi"]))
 @click.option("--factors", "-f", multiple=True, help='Factor definitions as JSON (e.g., \'{"name":"Temp","levels":3}\')')
 @click.option("--responses", "-r", "responses_json", default=None, help="Responses as JSON array")
 def doe(doe_type, factors, responses_json):
-    """Design of Experiments: full_factorial, fractional_factorial, response_surface."""
+    """Design of Experiments: full_factorial, fractional_factorial, response_surface, taguchi."""
     if not factors:
         click.echo("Error: --factors required", err=True)
         sys.exit(1)

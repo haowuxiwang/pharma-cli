@@ -212,6 +212,146 @@ if (doe_type == "full_factorial") {
     )
   }
 
+} else if (doe_type == "taguchi") {
+  # Taguchi methods (robust design)
+  factors <- input$factors
+  if (is.null(factors)) stop("factors required for Taguchi design")
+
+  n_factors <- length(factors)
+  factor_names <- sapply(factors, function(f) f$name)
+  n_levels <- sapply(factors, function(f) f$levels)
+
+  # Check if all factors have same number of levels
+  if (length(unique(n_levels)) > 1) {
+    stop("Taguchi design requires all factors to have the same number of levels")
+  }
+
+  # Select appropriate orthogonal array
+  if (n_factors <= 3 && n_levels[1] == 2) {
+    # L4 (2^3) orthogonal array
+    oa_name <- "L4"
+    oa_matrix <- matrix(c(
+      1, 1, 1,
+      1, 2, 2,
+      2, 1, 2,
+      2, 2, 1
+    ), nrow = 4, ncol = 3, byrow = TRUE)
+  } else if (n_factors <= 7 && n_levels[1] == 2) {
+    # L8 (2^7) orthogonal array
+    oa_name <- "L8"
+    oa_matrix <- matrix(c(
+      1, 1, 1, 1, 1, 1, 1,
+      1, 1, 1, 2, 2, 2, 2,
+      1, 2, 2, 1, 1, 2, 2,
+      1, 2, 2, 2, 2, 1, 1,
+      2, 1, 2, 1, 2, 1, 2,
+      2, 1, 2, 2, 1, 2, 1,
+      2, 2, 1, 1, 2, 2, 1,
+      2, 2, 1, 2, 1, 1, 2
+    ), nrow = 8, ncol = 7, byrow = TRUE)
+  } else if (n_factors <= 4 && n_levels[1] == 3) {
+    # L9 (3^4) orthogonal array
+    oa_name <- "L9"
+    oa_matrix <- matrix(c(
+      1, 1, 1, 1,
+      1, 2, 2, 2,
+      1, 3, 3, 3,
+      2, 1, 2, 3,
+      2, 2, 3, 1,
+      2, 3, 1, 2,
+      3, 1, 3, 2,
+      3, 2, 1, 3,
+      3, 3, 2, 1
+    ), nrow = 9, ncol = 4, byrow = TRUE)
+  } else {
+    stop(paste("No suitable orthogonal array for", n_factors, "factors with", n_levels[1], "levels"))
+  }
+
+  # Extract design matrix for specified factors
+  design_matrix <- as.data.frame(oa_matrix[, 1:n_factors])
+  colnames(design_matrix) <- factor_names
+  n_runs <- nrow(design_matrix)
+
+  # If responses provided, analyze
+  if (!is.null(input$responses)) {
+    responses <- as.numeric(input$responses)
+    if (length(responses) != n_runs) {
+      stop(paste("Expected", n_runs, "responses, got", length(responses)))
+    }
+
+    # Create data frame for analysis
+    df <- as.data.frame(design_matrix)
+    df$response <- responses
+
+    # Convert factors
+    for (fn in factor_names) {
+      df[[fn]] <- as.factor(df[[fn]])
+    }
+
+    # Calculate signal-to-noise ratio (S/N)
+    # Larger-is-better: S/N = -10 * log10(mean(1/y^2))
+    # Smaller-is-better: S/N = -10 * log10(mean(y^2))
+    # Nominal-is-best: S/N = 10 * log10(mean(y)^2 / var(y))
+
+    # Main effects
+    main_effects <- list()
+    for (fn in factor_names) {
+      group_means <- tapply(df$response, df[[fn]], mean)
+      main_effects[[fn]] <- list(
+        means = round(as.numeric(group_means), 4),
+        levels = names(group_means),
+        effect = round(max(group_means) - min(group_means), 4)
+      )
+    }
+
+    # ANOVA
+    formula_str <- paste("response ~", paste(factor_names, collapse = "+"))
+    model <- aov(as.formula(formula_str), data = df)
+    summary_model <- summary(model)
+
+    # Extract ANOVA table
+    anova_table <- as.data.frame(summary_model[[1]])
+    anova_results <- list()
+    for (i in 1:(nrow(anova_table) - 1)) {
+      row_name <- rownames(anova_table)[i]
+      f_val <- anova_table$`F value`[i]
+      p_val <- anova_table$`Pr(>F)`[i]
+      anova_results[[row_name]] <- list(
+        df = anova_table$Df[i],
+        ss = round(anova_table$`Sum Sq`[i], 4),
+        ms = round(anova_table$`Mean Sq`[i], 4),
+        f_stat = ifelse(is.na(f_val), NA, round(f_val, 4)),
+        p_value = ifelse(is.na(p_val), NA, round(p_val, 4)),
+        significant = !is.na(p_val) && p_val < 0.05
+      )
+    }
+
+    result <- list(
+      doe_type = "taguchi",
+      n_factors = n_factors,
+      n_runs = n_runs,
+      orthogonal_array = oa_name,
+      factors = factor_names,
+      design_matrix = as.data.frame(design_matrix),
+      responses = round(responses, 4),
+      main_effects = main_effects,
+      anova = anova_results,
+      overall_mean = round(mean(responses), 4),
+      interpretation = paste("Taguchi design using", oa_name, "orthogonal array. Check ANOVA p-values for significant factors.")
+    )
+
+  } else {
+    result <- list(
+      doe_type = "taguchi",
+      n_factors = n_factors,
+      n_runs = n_runs,
+      orthogonal_array = oa_name,
+      factors = factor_names,
+      design_matrix = as.data.frame(design_matrix),
+      interpretation = paste("Taguchi design using", oa_name, "orthogonal array. Add responses to analyze.")
+    )
+  }
+
 } else {
   stop(paste("Unknown DOE type:", doe_type))
 }
