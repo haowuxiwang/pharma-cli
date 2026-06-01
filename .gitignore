@@ -80,6 +80,12 @@ output/*.html
 output/*.png
 output/*.pdf
 
+# Documentation folder (local docs, not for distribution)
+docs/
+
+# Excel test data (local test files)
+excel/
+
 # Test data
 test_data.csv
 test_data.txt
@@ -89,4 +95,3 @@ test_data.json
 !requirements*.txt
 !pytest.ini
 !setup.py
-!excel/*.xlsx
