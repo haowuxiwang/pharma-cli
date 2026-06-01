@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Q-Q plots
   - Process capability charts
   - Scatter plots
+  - Regression diagnostics
 - **CLI Options**: Added `--interactive` flag for interactive charts
 - **Charts Module**: Created `cli/charts.py` with chart generation functions
 
@@ -48,6 +49,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `descriptive.html` - Descriptive statistics report
   - `comprehensive.html` - Comprehensive analysis report
 - **Reports Module**: Created `cli/reports.py` with report generation functions
+
+#### Real Data Testing
+- **Excel Files**: Tested all 6 Excel files with new features
+- **Interactive Charts**: Verified all chart types work correctly
+- **Non-parametric Tests**: Verified Mann-Whitney, Kruskal-Wallis, Wilcoxon
+- **Equivalence Tests**: Verified TOST and one-sample TOST
+- **Report Generation**: Verified all report types generate correctly
+
+### Fixed
+
+#### Charts Module
+- **out_of_control handling**: Fixed integer vs list type handling for out-of-control points
+
+#### Report Templates
+- **out_of_control_points**: Fixed length calculation for integer values
+
+#### CLI Commands
+- **descriptive command**: Added report generation support with `--report` flag
 
 ### Changed
 

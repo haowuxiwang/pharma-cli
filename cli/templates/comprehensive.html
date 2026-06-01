@@ -123,7 +123,7 @@
         <tr><td>Center Line (CL)</td><td>{{ "%.4f"|format(analyses.control_chart.chart.center) }}</td></tr>
         <tr><td>Upper Control Limit (UCL)</td><td>{{ "%.4f"|format(analyses.control_chart.chart.ucl) }}</td></tr>
         <tr><td>Lower Control Limit (LCL)</td><td>{{ "%.4f"|format(analyses.control_chart.chart.lcl) }}</td></tr>
-        <tr><td>Out of Control Points</td><td>{{ analyses.control_chart.chart.out_of_control_points|length }}</td></tr>
+        <tr><td>Out of Control Points</td><td>{{ analyses.control_chart.chart.out_of_control_points if analyses.control_chart.chart.out_of_control_points is number else analyses.control_chart.chart.out_of_control_points|length }}</td></tr>
         <tr><td>Stable</td><td>{{ 'Yes' if analyses.control_chart.summary.stable else 'No' }}</td></tr>
     </table>
 </div>

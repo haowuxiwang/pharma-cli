@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Comprehensive Analysis Report</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .header {
+            background-color: #2c3e50;
+            color: white;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+        .header p {
+            margin: 5px 0 0 0;
+            font-size: 14px;
+            opacity: 0.8;
+        }
+        .section {
+            margin: 20px 0;
+            padding: 15px;
+            background-color: #f9f9f9;
+            border-left: 4px solid #3498db;
+        }
+        .section h2 {
+            margin-top: 0;
+            color: #2c3e50;
+        }
+        .chart {
+            margin: 15px 0;
+            padding: 10px;
+            background-color: white;
+            border: 1px solid #ddd;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 10px 0;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #3498db;
+            color: white;
+        }
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+        .metric {
+            display: inline-block;
+            width: 200px;
+            margin: 5px;
+            padding: 10px;
+            background-color: white;
+            border: 1px solid #ddd;
+            text-align: center;
+        }
+        .metric-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #3498db;
+        }
+        .metric-label {
+            font-size: 12px;
+            color: #666;
+        }
+        .interpretation {
+            padding: 10px;
+            background-color: #e8f4f8;
+            border-left: 4px solid #3498db;
+            margin: 10px 0;
+        }
+        .warning {
+            background-color: #fff3cd;
+            border-left: 4px solid #ffc107;
+        }
+        .success {
+            background-color: #d4edda;
+            border-left: 4px solid #28a745;
+        }
+        .footer {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #f5f5f5;
+            text-align: center;
+            font-size: 12px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Comprehensive Analysis Report</h1>
+            <p>Generated on: 2026-06-01 15:12:47</p>
+        </div>
+        
+
+
+<div class="section">
+    <h2>Descriptive Statistics</h2>
+    <div class="metric">
+        <div class="metric-value">209</div>
+        <div class="metric-label">Sample Size</div>
+    </div>
+    <div class="metric">
+        <div class="metric-value">180.5215</div>
+        <div class="metric-label">Mean</div>
+    </div>
+    <div class="metric">
+        <div class="metric-value">3.0065</div>
+        <div class="metric-label">Std Dev</div>
+    </div>
+    <div class="metric">
+        <div class="metric-value">1.67%</div>
+        <div class="metric-label">RSD%</div>
+    </div>
+
+    <table>
+        <tr><th>Metric</th><th>Value</th></tr>
+        <tr><td>Sample Size (n)</td><td>209</td></tr>
+        <tr><td>Mean</td><td>180.5215</td></tr>
+        <tr><td>Median</td><td>181.0000</td></tr>
+        <tr><td>Standard Deviation</td><td>3.0065</td></tr>
+        <tr><td>RSD%</td><td>1.67%</td></tr>
+        <tr><td>Minimum</td><td>170.0000</td></tr>
+        <tr><td>Maximum</td><td>189.0000</td></tr>
+        <tr><td>Range</td><td>19.0000</td></tr>
+        <tr><td>95% CI</td><td>[180.1115, 180.9315]</td></tr>
+    </table>
+</div>
+
+
+
+<div class="section">
+    <h2>Normality Test</h2>
+    <div class="interpretation warning">
+        <strong>Conclusion:</strong> Data does NOT follow a normal distribution (p <= 0.05)
+    </div>
+
+    <table>
+        <tr><th>Test</th><th>Statistic</th><th>p-value</th><th>Result</th></tr>
+        <tr>
+            <td>Shapiro-Wilk</td>
+            <td>0.9841</td>
+            <td>0.0187</td>
+            <td>Not Normal</td>
+        </tr>
+        
+        <tr>
+            <td>Anderson-Darling</td>
+            <td>1.3324</td>
+            <td>0.0018</td>
+            <td>Not Normal</td>
+        </tr>
+        
+        
+        <tr>
+            <td>Lilliefors</td>
+            <td>0.1009</td>
+            <td>0.0000</td>
+            <td>Not Normal</td>
+        </tr>
+        
+    </table>
+</div>
+
+
+
+<div class="section">
+    <h2>Process Capability</h2>
+    <div class="interpretation warning">
+        <strong>Rating:</strong> Marginal - Process is marginally capable, improvement recommended
+    </div>
+
+    <div class="metric">
+        <div class="metric-value">1.1087</div>
+        <div class="metric-label">Cp</div>
+    </div>
+    <div class="metric">
+        <div class="metric-value">1.0509</div>
+        <div class="metric-label">Cpk</div>
+    </div>
+    <div class="metric">
+        <div class="metric-value">1.1087</div>
+        <div class="metric-label">Pp</div>
+    </div>
+    <div class="metric">
+        <div class="metric-value">1.0509</div>
+        <div class="metric-label">Ppk</div>
+    </div>
+
+    <table>
+        <tr><th>Metric</th><th>Value</th></tr>
+        <tr><td>Cp</td><td>1.1087</td></tr>
+        <tr><td>Cpk</td><td>1.0509</td></tr>
+        <tr><td>Pp</td><td>1.1087</td></tr>
+        <tr><td>Ppk</td><td>1.0509</td></tr>
+        <tr><td>USL</td><td>190</td></tr>
+        <tr><td>LSL</td><td>170</td></tr>
+        <tr><td>Target</td><td>180</td></tr>
+        <tr><td>Rating</td><td>Marginal</td></tr>
+    </table>
+</div>
+
+
+
+<div class="section">
+    <h2>Control Chart (I-MR)</h2>
+    <div class="interpretation warning">
+        <strong>Status:</strong> Process has 1 out-of-control point(s)
+    </div>
+
+    <table>
+        <tr><th>Metric</th><th>Value</th></tr>
+        <tr><td>Center Line (CL)</td><td>180.5215</td></tr>
+        <tr><td>Upper Control Limit (UCL)</td><td>189.0756</td></tr>
+        <tr><td>Lower Control Limit (LCL)</td><td>171.9674</td></tr>
+        <tr><td>Out of Control Points</td><td>131</td></tr>
+        <tr><td>Stable</td><td>No</td></tr>
+    </table>
+</div>
+
+
+
+
+<div class="section">
+    <h2>Summary</h2>
+    <div class="interpretation">
+        <strong>Key Findings:</strong>
+        <ul>
+            
+            <li>Sample size: 209 observations</li>
+            <li>Mean: 180.5215, Std Dev: 3.0065</li>
+            
+            
+            <li>Normality: Data does NOT follow normal distribution</li>
+            
+            
+            <li>Process Capability: Marginal (Cpk = 1.0509)</li>
+            
+            
+            <li>Process Stability: Unstable</li>
+            
+        </ul>
+    </div>
+</div>
+
+
+        <div class="footer">
+            <p>Generated by stats-cli v0.3.0 - AI-friendly statistical analysis CLI for manufacturing</p>
+        </div>
+    </div>
+</body>
+</html>

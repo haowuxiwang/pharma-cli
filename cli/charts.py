@@ -65,8 +65,14 @@ def create_control_chart(data: Dict[str, Any]) -> str:
 
     # Highlight out-of-control points
     if out_of_control:
+        # Handle both list and single integer
+        if isinstance(out_of_control, (list, tuple)):
+            ooc_list = out_of_control
+        else:
+            ooc_list = [out_of_control]
+
         # Convert to 0-based index
-        ooc_indices = [i - 1 for i in out_of_control if 0 <= i - 1 < len(points)]
+        ooc_indices = [i - 1 for i in ooc_list if 0 <= i - 1 < len(points)]
         if ooc_indices:
             fig.add_trace(go.Scatter(
                 x=[i + 1 for i in ooc_indices],
