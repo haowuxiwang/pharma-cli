@@ -42,6 +42,12 @@ AI-friendly statistical analysis CLI for manufacturing.
 - **run**: Execute custom R scripts with JSON I/O
 - **report**: Generate comprehensive analysis report
 
+### Recent Additions (v0.3.0)
+- **Interactive Charts**: Plotly-based interactive HTML charts
+- **Non-parametric Tests**: Mann-Whitney, Kruskal-Wallis, Wilcoxon
+- **Equivalence Tests**: TOST (Two One-Sided Tests)
+- **HTML Reports**: Comprehensive analysis reports with charts
+
 ---
 
 ## Industries
@@ -183,6 +189,27 @@ stats-cli doe full_factorial -f '{"name":"Temp","levels":3}' -f '{"name":"Time",
 ### Custom R Script
 ```bash
 stats-cli run my_script.R -d '{"values": [1, 2, 3]}'
+```
+
+### Non-parametric Tests
+```bash
+# Mann-Whitney U test
+stats-cli nonparametric mann_whitney --x 10.2 --x 10.5 --x 10.1 --y 11.3 --y 11.5 --y 11.1
+
+# Kruskal-Wallis test
+stats-cli nonparametric kruskal_wallis -g '[10.2,10.5,10.1]' -g '[11.3,11.5,11.1]' -g '[12.1,12.3,12.2]'
+
+# Wilcoxon signed-rank test
+stats-cli nonparametric wilcoxon --x 10.2 --x 10.5 --x 10.1 --y 10.8 --y 10.9 --y 10.7
+```
+
+### Equivalence Tests
+```bash
+# Two-sample TOST
+stats-cli equivalence tost --x 10.2 --x 10.5 --x 10.1 --y 10.3 --y 10.4 --y 10.2 --delta 0.5
+
+# One-sample TOST
+stats-cli equivalence one_sample_tost --x 10.2 --x 10.5 --x 10.1 --mu 10.3 --delta 0.5
 ```
 
 ### Chart Generation
