@@ -1,0 +1,166 @@
+{% extends "base.html" %}
+{% block title %}Comprehensive Analysis Report{% endblock %}
+{% block header %}Comprehensive Analysis Report{% endblock %}
+{% block content %}
+
+{% if analyses.descriptive %}
+<div class="section">
+    <h2>Descriptive Statistics</h2>
+    <div class="metric">
+        <div class="metric-value">{{ analyses.descriptive.n }}</div>
+        <div class="metric-label">Sample Size</div>
+    </div>
+    <div class="metric">
+        <div class="metric-value">{{ "%.4f"|format(analyses.descriptive.mean) }}</div>
+        <div class="metric-label">Mean</div>
+    </div>
+    <div class="metric">
+        <div class="metric-value">{{ "%.4f"|format(analyses.descriptive.std) }}</div>
+        <div class="metric-label">Std Dev</div>
+    </div>
+    <div class="metric">
+        <div class="metric-value">{{ "%.2f"|format(analyses.descriptive.rsd_percent) }}%</div>
+        <div class="metric-label">RSD%</div>
+    </div>
+
+    <table>
+        <tr><th>Metric</th><th>Value</th></tr>
+        <tr><td>Sample Size (n)</td><td>{{ analyses.descriptive.n }}</td></tr>
+        <tr><td>Mean</td><td>{{ "%.4f"|format(analyses.descriptive.mean) }}</td></tr>
+        <tr><td>Median</td><td>{{ "%.4f"|format(analyses.descriptive.median) }}</td></tr>
+        <tr><td>Standard Deviation</td><td>{{ "%.4f"|format(analyses.descriptive.std) }}</td></tr>
+        <tr><td>RSD%</td><td>{{ "%.2f"|format(analyses.descriptive.rsd_percent) }}%</td></tr>
+        <tr><td>Minimum</td><td>{{ "%.4f"|format(analyses.descriptive.min) }}</td></tr>
+        <tr><td>Maximum</td><td>{{ "%.4f"|format(analyses.descriptive.max) }}</td></tr>
+        <tr><td>Range</td><td>{{ "%.4f"|format(analyses.descriptive.range) }}</td></tr>
+        <tr><td>95% CI</td><td>[{{ "%.4f"|format(analyses.descriptive.ci_95_lower) }}, {{ "%.4f"|format(analyses.descriptive.ci_95_upper) }}]</td></tr>
+    </table>
+</div>
+{% endif %}
+
+{% if analyses.normality %}
+<div class="section">
+    <h2>Normality Test</h2>
+    <div class="interpretation {{ 'success' if analyses.normality.is_normal else 'warning' }}">
+        <strong>Conclusion:</strong> {{ analyses.normality.interpretation }}
+    </div>
+
+    <table>
+        <tr><th>Test</th><th>Statistic</th><th>p-value</th><th>Result</th></tr>
+        <tr>
+            <td>Shapiro-Wilk</td>
+            <td>{{ "%.4f"|format(analyses.normality.shapiro_wilk.statistic) }}</td>
+            <td>{{ "%.4f"|format(analyses.normality.shapiro_wilk.p_value) }}</td>
+            <td>{{ 'Normal' if analyses.normality.shapiro_wilk.is_normal else 'Not Normal' }}</td>
+        </tr>
+        {% if analyses.normality.anderson_darling.statistic %}
+        <tr>
+            <td>Anderson-Darling</td>
+            <td>{{ "%.4f"|format(analyses.normality.anderson_darling.statistic) }}</td>
+            <td>{{ "%.4f"|format(analyses.normality.anderson_darling.p_value) }}</td>
+            <td>{{ 'Normal' if analyses.normality.anderson_darling.p_value > 0.05 else 'Not Normal' }}</td>
+        </tr>
+        {% endif %}
+        {% if analyses.normality.lilliefors.statistic %}
+        <tr>
+            <td>Lilliefors</td>
+            <td>{{ "%.4f"|format(analyses.normality.lilliefors.statistic) }}</td>
+            <td>{{ "%.4f"|format(analyses.normality.lilliefors.p_value) }}</td>
+            <td>{{ 'Normal' if analyses.normality.lilliefors.p_value > 0.05 else 'Not Normal' }}</td>
+        </tr>
+        {% endif %}
+    </table>
+</div>
+{% endif %}
+
+{% if analyses.capability %}
+<div class="section">
+    <h2>Process Capability</h2>
+    <div class="interpretation {{ 'success' if analyses.capability.rating == 'Good' or analyses.capability.rating == 'Excellent' else 'warning' }}">
+        <strong>Rating:</strong> {{ analyses.capability.rating }} - {{ analyses.capability.rating_desc }}
+    </div>
+
+    <div class="metric">
+        <div class="metric-value">{{ "%.4f"|format(analyses.capability.cp) }}</div>
+        <div class="metric-label">Cp</div>
+    </div>
+    <div class="metric">
+        <div class="metric-value">{{ "%.4f"|format(analyses.capability.cpk) }}</div>
+        <div class="metric-label">Cpk</div>
+    </div>
+    <div class="metric">
+        <div class="metric-value">{{ "%.4f"|format(analyses.capability.pp) }}</div>
+        <div class="metric-label">Pp</div>
+    </div>
+    <div class="metric">
+        <div class="metric-value">{{ "%.4f"|format(analyses.capability.ppk) }}</div>
+        <div class="metric-label">Ppk</div>
+    </div>
+
+    <table>
+        <tr><th>Metric</th><th>Value</th></tr>
+        <tr><td>Cp</td><td>{{ "%.4f"|format(analyses.capability.cp) }}</td></tr>
+        <tr><td>Cpk</td><td>{{ "%.4f"|format(analyses.capability.cpk) }}</td></tr>
+        <tr><td>Pp</td><td>{{ "%.4f"|format(analyses.capability.pp) }}</td></tr>
+        <tr><td>Ppk</td><td>{{ "%.4f"|format(analyses.capability.ppk) }}</td></tr>
+        <tr><td>USL</td><td>{{ analyses.capability.usl }}</td></tr>
+        <tr><td>LSL</td><td>{{ analyses.capability.lsl }}</td></tr>
+        <tr><td>Target</td><td>{{ analyses.capability.target }}</td></tr>
+        <tr><td>Rating</td><td>{{ analyses.capability.rating }}</td></tr>
+    </table>
+</div>
+{% endif %}
+
+{% if analyses.control_chart %}
+<div class="section">
+    <h2>Control Chart (I-MR)</h2>
+    <div class="interpretation {{ 'success' if analyses.control_chart.summary.stable else 'warning' }}">
+        <strong>Status:</strong> {{ analyses.control_chart.summary.message }}
+    </div>
+
+    <table>
+        <tr><th>Metric</th><th>Value</th></tr>
+        <tr><td>Center Line (CL)</td><td>{{ "%.4f"|format(analyses.control_chart.chart.center) }}</td></tr>
+        <tr><td>Upper Control Limit (UCL)</td><td>{{ "%.4f"|format(analyses.control_chart.chart.ucl) }}</td></tr>
+        <tr><td>Lower Control Limit (LCL)</td><td>{{ "%.4f"|format(analyses.control_chart.chart.lcl) }}</td></tr>
+        <tr><td>Out of Control Points</td><td>{{ analyses.control_chart.chart.out_of_control_points|length }}</td></tr>
+        <tr><td>Stable</td><td>{{ 'Yes' if analyses.control_chart.summary.stable else 'No' }}</td></tr>
+    </table>
+</div>
+{% endif %}
+
+{% if charts %}
+<div class="section">
+    <h2>Charts</h2>
+    {% for chart_name, chart_html in charts.items() %}
+    <div class="chart">
+        <h3>{{ chart_name|title }}</h3>
+        {{ chart_html }}
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<div class="section">
+    <h2>Summary</h2>
+    <div class="interpretation">
+        <strong>Key Findings:</strong>
+        <ul>
+            {% if analyses.descriptive %}
+            <li>Sample size: {{ analyses.descriptive.n }} observations</li>
+            <li>Mean: {{ "%.4f"|format(analyses.descriptive.mean) }}, Std Dev: {{ "%.4f"|format(analyses.descriptive.std) }}</li>
+            {% endif %}
+            {% if analyses.normality %}
+            <li>Normality: {{ 'Data follows normal distribution' if analyses.normality.is_normal else 'Data does NOT follow normal distribution' }}</li>
+            {% endif %}
+            {% if analyses.capability %}
+            <li>Process Capability: {{ analyses.capability.rating }} (Cpk = {{ "%.4f"|format(analyses.capability.cpk) }})</li>
+            {% endif %}
+            {% if analyses.control_chart %}
+            <li>Process Stability: {{ 'Stable' if analyses.control_chart.summary.stable else 'Unstable' }}</li>
+            {% endif %}
+        </ul>
+    </div>
+</div>
+
+{% endblock %}

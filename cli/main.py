@@ -4,6 +4,7 @@ import json
 import sys
 import numpy as np
 from pathlib import Path
+from datetime import datetime
 
 from cli.r_engine import run_r_file
 from cli.validators import (
@@ -58,6 +59,28 @@ def normality(ctx, values, data_file, column):
     if ctx.obj.get("generate_plot"):
         data["generate_plot"] = True
     result = run_r_file("normality.R", data)
+
+    # Generate interactive chart if requested
+    if ctx.obj.get("interactive"):
+        from cli.charts import create_histogram, create_qq_plot
+        html_histogram = create_histogram(result, title="Normality Test - Histogram")
+        html_qq = create_qq_plot(result)
+
+        # Save charts
+        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+        histogram_file = f"normality_histogram_{timestamp}.html"
+        qq_file = f"normality_qq_{timestamp}.html"
+
+        with open(histogram_file, 'w', encoding='utf-8') as f:
+            f.write(html_histogram)
+        with open(qq_file, 'w', encoding='utf-8') as f:
+            f.write(html_qq)
+
+        result['interactive_charts'] = {
+            'histogram': histogram_file,
+            'qq_plot': qq_file
+        }
+
     _output(result)
 
 
@@ -81,6 +104,17 @@ def capability(ctx, values, data_file, column, usl, lsl, target):
     if ctx.obj.get("generate_plot"):
         data["generate_plot"] = True
     result = run_r_file("capability.R", data)
+
+    # Generate interactive chart if requested
+    if ctx.obj.get("interactive"):
+        from cli.charts import create_capability_chart
+        html = create_capability_chart(result)
+        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+        chart_file = f"capability_{timestamp}.html"
+        with open(chart_file, 'w', encoding='utf-8') as f:
+            f.write(html)
+        result['interactive_chart'] = chart_file
+
     _output(result)
 
 
@@ -171,7 +205,8 @@ def anova(anova_type, groups, data_json, response, factor1, factor2):
 @click.option("--y-column", default=None, help="Y column name in CSV")
 @click.option("--type", "reg_type", type=click.Choice(["linear", "quadratic", "polynomial"]), default="linear")
 @click.option("--degree", type=int, default=3, help="Polynomial degree (for polynomial type)")
-def regression(x, y, data_file, x_column, y_column, reg_type, degree):
+@click.pass_context
+def regression(ctx, x, y, data_file, x_column, y_column, reg_type, degree):
     """Regression analysis: linear, quadratic, polynomial."""
     if x and y:
         x_list, y_list = validate_xy(x, y)
@@ -198,6 +233,22 @@ def regression(x, y, data_file, x_column, y_column, reg_type, degree):
     data["reg_type"] = reg_type
     data["degree"] = degree
     result = run_r_file("regression.R", data)
+
+    # Generate interactive diagnostic plots if requested
+    if ctx.obj.get("interactive"):
+        from cli.charts import create_diagnostic_plots
+        plots = create_diagnostic_plots(result)
+        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+
+        interactive_charts = {}
+        for plot_name, html in plots.items():
+            filename = f"regression_{plot_name}_{timestamp}.html"
+            with open(filename, 'w', encoding='utf-8') as f:
+                f.write(html)
+            interactive_charts[plot_name] = filename
+
+        result['interactive_charts'] = interactive_charts
+
     _output(result)
 
 
@@ -224,6 +275,50 @@ def correlation(x, y, data_file, method):
         raise click.UsageError("provide --x/--y or --file")
     data["method"] = method
     result = run_r_file("correlation.R", data)
+    _output(result)
+
+
+@main.command()
+@click.argument("test_type", type=click.Choice(["mann_whitney", "kruskal_wallis", "wilcoxon"]))
+@click.option("--x", multiple=True, type=float, help="First sample values")
+@click.option("--y", multiple=True, type=float, help="Second sample values")
+@click.option("--groups", "-g", multiple=True, help="Groups as JSON arrays (for kruskal_wallis)")
+def nonparametric(test_type, x, y, groups):
+    """Non-parametric tests: mann_whitney, kruskal_wallis, wilcoxon."""
+    if test_type in ["mann_whitney", "wilcoxon"]:
+        if not x or not y:
+            raise click.UsageError("--x and --y required for this test")
+        data = {"test_type": test_type, "x": list(x), "y": list(y)}
+    elif test_type == "kruskal_wallis":
+        if not groups:
+            raise click.UsageError("--groups required for Kruskal-Wallis test")
+        group_list = [json.loads(g) for g in groups]
+        data = {"test_type": test_type, "groups": group_list}
+
+    result = run_r_file("nonparametric.R", data)
+    _output(result)
+
+
+@main.command()
+@click.argument("test_type", type=click.Choice(["tost", "one_sample_tost"]))
+@click.option("--x", multiple=True, type=float, help="First sample values")
+@click.option("--y", multiple=True, type=float, help="Second sample values (for tost)")
+@click.option("--mu", type=float, help="Hypothesized mean (for one_sample_tost)")
+@click.option("--delta", type=float, required=True, help="Equivalence margin")
+def equivalence(test_type, x, y, mu, delta):
+    """Equivalence tests: tost, one_sample_tost."""
+    if test_type == "tost":
+        if not x or not y:
+            raise click.UsageError("--x and --y required for two-sample TOST")
+        data = {"test_type": test_type, "x": list(x), "y": list(y), "delta": delta}
+    elif test_type == "one_sample_tost":
+        if not x:
+            raise click.UsageError("--x required for one-sample TOST")
+        if mu is None:
+            raise click.UsageError("--mu required for one-sample TOST")
+        data = {"test_type": test_type, "x": list(x), "mu": mu, "delta": delta}
+
+    result = run_r_file("equivalence.R", data)
     _output(result)
 
 
@@ -404,6 +499,81 @@ def _load_data(values, data_file, column):
 def _output(data):
     """Output result as JSON."""
     click.echo(json.dumps(data, indent=2, ensure_ascii=False))
+
+
+@main.command()
+@click.option("--values", "-v", multiple=True, type=float, help="Data values")
+@click.option("--file", "-f", "data_file", type=click.Path(exists=True), help="File with data")
+@click.option("--column", "-c", default=None, help="Column name if file is CSV/TSV")
+@click.option("--usl", type=float, default=None, help="Upper specification limit")
+@click.option("--lsl", type=float, default=None, help="Lower specification limit")
+@click.pass_context
+def report(ctx, values, data_file, column, usl, lsl):
+    """Generate comprehensive analysis report."""
+    data = _load_data(values, data_file, column)
+    if "values" in data:
+        validate_values(tuple(data["values"]), min_count=2, name="values")
+
+    # Run all analyses
+    analyses = {}
+    charts = {}
+
+    # Descriptive
+    desc_result = run_r_file("descriptive.R", data)
+    analyses['descriptive'] = desc_result
+
+    # Normality
+    norm_result = run_r_file("normality.R", data)
+    analyses['normality'] = norm_result
+
+    # Capability (if limits provided)
+    if usl or lsl:
+        cap_data = data.copy()
+        cap_data['usl'] = usl
+        cap_data['lsl'] = lsl
+        cap_result = run_r_file("capability.R", cap_data)
+        analyses['capability'] = cap_result
+
+    # Control chart
+    cc_data = data.copy()
+    cc_data['chart_type'] = 'imr'
+    cc_result = run_r_file("control_chart.R", cc_data)
+    analyses['control_chart'] = cc_result
+
+    # Generate charts if interactive mode
+    if ctx.obj.get("interactive"):
+        from cli.charts import create_histogram, create_control_chart, create_capability_chart
+
+        # Histogram
+        charts['histogram'] = create_histogram(norm_result, title="Data Distribution")
+
+        # Control chart
+        charts['control_chart'] = create_control_chart(cc_result)
+
+        # Capability chart (if limits provided)
+        if usl or lsl and 'capability' in analyses:
+            charts['capability'] = create_capability_chart(analyses['capability'])
+
+    # Generate report
+    from cli.reports import ReportGenerator
+    generator = ReportGenerator()
+
+    if usl or lsl:
+        html = generator.generate_comprehensive_report(analyses, charts)
+    else:
+        html = generator.generate_descriptive_report(desc_result, charts.get('histogram'))
+
+    # Save report
+    timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+    report_file = f"report_{timestamp}.html"
+    with open(report_file, 'w', encoding='utf-8') as f:
+        f.write(html)
+
+    _output({
+        "report_file": report_file,
+        "analyses": analyses,
+        "message": f"Report generated: {report_file}"
+    })
 
 
 if __name__ == "__main__":
