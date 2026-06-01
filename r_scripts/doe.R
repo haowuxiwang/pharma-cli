@@ -140,9 +140,11 @@ if (doe_type == "full_factorial") {
   # Central Composite Design
   # Factorial points
   factorial_points <- expand.grid(replicate(n_factors, c(-1, 1), simplify = FALSE))
+  colnames(factorial_points) <- factor_names
 
   # Center points (5 replicates)
   center_points <- as.data.frame(matrix(0, nrow = 5, ncol = n_factors))
+  colnames(center_points) <- factor_names
 
   # Axial (star) points
   alpha <- sqrt(n_factors)
@@ -152,10 +154,10 @@ if (doe_type == "full_factorial") {
     axial_points[2*i, i] <- alpha
   }
   axial_points <- as.data.frame(axial_points)
+  colnames(axial_points) <- factor_names
 
   # Combine all points
   design_matrix <- rbind(factorial_points, center_points, axial_points)
-  colnames(design_matrix) <- factor_names
   n_runs <- nrow(design_matrix)
 
   # If responses provided, fit quadratic model

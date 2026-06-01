@@ -98,10 +98,10 @@ detect_outliers <- function(values, method) {
   }
 
   list(
-    outliers = round(outliers, 4),
+    outliers = if (length(outliers) > 0) round(outliers, 4) else c(),
     n_outliers = length(outliers),
-    test_statistic = round(as.numeric(test_stat), 4),
-    critical_value = ifelse(is.numeric(critical), round(critical, 4), critical)
+    test_statistic = ifelse(is.na(test_stat), NA, round(as.numeric(test_stat), 4)),
+    critical_value = ifelse(is.na(critical), NA, ifelse(is.numeric(critical), round(critical, 4), critical))
   )
 }
 
