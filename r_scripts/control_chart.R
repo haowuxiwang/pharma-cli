@@ -213,6 +213,82 @@ if (chart_type == "xbar") {
   chart$violations <- detect_rules(u_values, center, ucl, lcl, sigma)
   result <- list(chart_type = "u", sample_size = n_sample, chart = chart)
 
+} else if (chart_type == "ewma") {
+  # EWMA (Exponentially Weighted Moving Average) chart
+  lambda <- ifelse(is.null(input$lambda), 0.2, input$lambda)
+  target <- ifelse(is.null(input$target), mean(values), input$target)
+
+  # Calculate EWMA values
+  ewma_values <- numeric(n)
+  ewma_values[1] <- lambda * values[1] + (1 - lambda) * target
+  for (i in 2:n) {
+    ewma_values[i] <- lambda * values[i] + (1 - lambda) * ewma_values[i-1]
+  }
+
+  # Calculate control limits
+  sigma <- sd(values)
+  center <- target
+  ucl <- target + 3 * sigma * sqrt(lambda / (2 - lambda) * (1 - (1 - lambda)^(2 * (1:n))))
+  lcl <- target - 3 * sigma * sqrt(lambda / (2 - lambda) * (1 - (1 - lambda)^(2 * (1:n))))
+
+  chart <- create_chart(ewma_values, center, ucl[1], lcl[1], "EWMA Chart")
+  chart$ucl <- round(ucl, 4)
+  chart$lcl <- round(lcl, 4)
+  chart$lambda <- lambda
+  chart$target <- target
+  chart$violations <- detect_rules(ewma_values, center, ucl[1], lcl[1], sigma)
+  result <- list(chart_type = "ewma", chart = chart)
+
+} else if (chart_type == "cusum") {
+  # CUSUM (Cumulative Sum) chart
+  target <- ifelse(is.null(input$target), mean(values), input$target)
+  k <- ifelse(is.null(input$k), 0.5, input$k)  # Reference value (typically 0.5 * sigma)
+  h <- ifelse(is.null(input$h), 5, input$h)  # Decision interval (typically 5 * sigma)
+
+  sigma <- sd(values)
+  k_val <- k * sigma
+  h_val <- h * sigma
+
+  # Calculate CUSUM values
+  cusum_pos <- numeric(n)
+  cusum_neg <- numeric(n)
+  cusum_pos[1] <- max(0, values[1] - target - k_val)
+  cusum_neg[1] <- max(0, target - values[1] - k_val)
+
+  for (i in 2:n) {
+    cusum_pos[i] <- max(0, cusum_pos[i-1] + values[i] - target - k_val)
+    cusum_neg[i] <- max(0, cusum_neg[i-1] + target - values[i] - k_val)
+  }
+
+  # Find alarm points
+  alarm_points <- which(cusum_pos > h_val | cusum_neg > h_val)
+
+  chart <- list(
+    points = round(values, 4),
+    center = round(target, 4),
+    ucl = round(h_val, 4),
+    lcl = round(-h_val, 4),
+    cusum_pos = round(cusum_pos, 4),
+    cusum_neg = round(cusum_neg, 4),
+    k = k,
+    h = h,
+    alarm_points = alarm_points,
+    n_alarms = length(alarm_points),
+    title = "CUSUM Chart"
+  )
+
+  result <- list(
+    chart_type = "cusum",
+    chart = chart,
+    summary = list(
+      stable = length(alarm_points) == 0,
+      message = ifelse(length(alarm_points) == 0,
+        "No alarms detected - process appears stable",
+        paste(length(alarm_points), "alarm(s) detected - process may be out of control")
+      )
+    )
+  )
+
 } else {
   stop(paste("Unknown chart type:", chart_type))
 }

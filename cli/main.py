@@ -164,15 +164,19 @@ def capability(ctx, values, data_file, column, usl, lsl, target):
 
 
 @main.command()
-@click.argument("chart_type", type=click.Choice(["xbar", "r", "imr", "p", "np", "c", "u"]))
+@click.argument("chart_type", type=click.Choice(["xbar", "r", "imr", "p", "np", "c", "u", "ewma", "cusum"]))
 @click.option("--values", "-v", multiple=True, type=float, help="Data values")
 @click.option("--file", "-f", "data_file", type=click.Path(exists=True), help="File with data")
 @click.option("--column", "-c", default=None, help="Column name if file is CSV/TSV")
 @click.option("--subgroup-size", "-s", default=5, type=int, help="Subgroup size (default 5)")
 @click.option("--sample-size", default=None, type=int, help="Sample size for p/np/c/u charts")
+@click.option("--target", type=float, default=None, help="Target value (for ewma/cusum)")
+@click.option("--ewma-lambda", type=float, default=0.2, help="EWMA lambda parameter (0-1)")
+@click.option("--cusum-k", type=float, default=0.5, help="CUSUM reference value (k * sigma)")
+@click.option("--cusum-h", type=float, default=5, help="CUSUM decision interval (h * sigma)")
 @click.pass_context
-def control_chart(ctx, chart_type, values, data_file, column, subgroup_size, sample_size):
-    """Control charts: xbar, r, imr, p, np, c, u with Western Electric rules."""
+def control_chart(ctx, chart_type, values, data_file, column, subgroup_size, sample_size, target, ewma_lambda, cusum_k, cusum_h):
+    """Control charts: xbar, r, imr, p, np, c, u, ewma, cusum with Western Electric rules."""
     subgroup_size = validate_subgroup_size(subgroup_size)
     data = _load_data(values, data_file, column)
     if "values" in data:
@@ -181,6 +185,14 @@ def control_chart(ctx, chart_type, values, data_file, column, subgroup_size, sam
     data["subgroup_size"] = subgroup_size
     if sample_size:
         data["sample_size"] = sample_size
+    if target is not None:
+        data["target"] = target
+    if ewma_lambda:
+        data["lambda"] = ewma_lambda
+    if cusum_k:
+        data["k"] = cusum_k
+    if cusum_h:
+        data["h"] = cusum_h
     if ctx.obj.get("generate_plot"):
         data["generate_plot"] = True
     result = run_r_file("control_chart.R", data)
@@ -341,6 +353,33 @@ def nonparametric(test_type, x, y, groups):
         data = {"test_type": test_type, "groups": group_list}
 
     result = run_r_file("nonparametric.R", data)
+    _output(result)
+
+
+@main.command()
+@click.argument("test_type", type=click.Choice(["levene", "bartlett"]))
+@click.option("--groups", "-g", multiple=True, help="Groups as JSON arrays (e.g., '[1,2,3]' '[4,5,6]')")
+def homogeneity(test_type, groups):
+    """Homogeneity of variance tests: levene, bartlett."""
+    if not groups:
+        raise click.UsageError("--groups required for homogeneity tests")
+    group_list = [json.loads(g) for g in groups]
+    data = {"test_type": test_type, "groups": group_list}
+    result = run_r_file("homogeneity.R", data)
+    _output(result)
+
+
+@main.command()
+@click.argument("test_type", type=click.Choice(["tukey", "bonferroni", "scheffe"]))
+@click.option("--groups", "-g", multiple=True, help="Groups as JSON arrays (e.g., '[1,2,3]' '[4,5,6]')")
+@click.option("--alpha", type=float, default=0.05, help="Significance level")
+def multiple_comparison(test_type, groups, alpha):
+    """Multiple comparison tests: tukey, bonferroni, scheffe."""
+    if not groups:
+        raise click.UsageError("--groups required for multiple comparison tests")
+    group_list = [json.loads(g) for g in groups]
+    data = {"test_type": test_type, "groups": group_list, "alpha": alpha}
+    result = run_r_file("multiple_comparison.R", data)
     _output(result)
 
 
