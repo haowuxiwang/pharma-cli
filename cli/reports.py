@@ -121,3 +121,36 @@ class ReportGenerator:
             charts=charts or {},
             timestamp=datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         )
+
+    def generate_report(self, analysis_type: str, data: Dict[str, Any],
+                       charts: Optional[Dict[str, str]] = None) -> str:
+        """Generate report based on analysis type.
+
+        Args:
+            analysis_type: Type of analysis (descriptive, normality, capability, etc.)
+            data: Analysis results
+            charts: Optional dictionary of HTML chart strings
+
+        Returns:
+            HTML report string
+
+        Raises:
+            ValueError: If analysis type is not supported
+        """
+        report_methods = {
+            'descriptive': self.generate_descriptive_report,
+            'normality': self.generate_normality_report,
+            'capability': self.generate_capability_report,
+            'control_chart': self.generate_control_chart_report,
+            'regression': self.generate_regression_report,
+            'comprehensive': self.generate_comprehensive_report,
+        }
+
+        if analysis_type not in report_methods:
+            raise ValueError(f"Unsupported analysis type: {analysis_type}")
+
+        method = report_methods[analysis_type]
+        if charts:
+            return method(data, charts)
+        else:
+            return method(data)

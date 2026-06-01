@@ -347,6 +347,198 @@ def create_scatter_plot(x: List[float], y: List[float],
     return pio.to_html(fig, full_html=False)
 
 
+def create_box_plot(data: List[float], groups: List[str] = None,
+                    title: str = "Box Plot") -> str:
+    """Create interactive box plot.
+
+    Args:
+        data: List of values or list of lists for multiple groups
+        groups: Group names (optional)
+        title: Chart title
+
+    Returns:
+        HTML string of interactive chart
+    """
+    fig = go.Figure()
+
+    # Handle single group or multiple groups
+    if isinstance(data[0], (list, tuple)):
+        # Multiple groups
+        for i, group_data in enumerate(data):
+            group_name = groups[i] if groups and i < len(groups) else f"Group {i+1}"
+            fig.add_trace(go.Box(
+                y=group_data,
+                name=group_name,
+                boxpoints='outliers',
+                jitter=0.3,
+                pointpos=-1.8
+            ))
+    else:
+        # Single group
+        fig.add_trace(go.Box(
+            y=data,
+            name="Data",
+            boxpoints='outliers',
+            jitter=0.3,
+            pointpos=-1.8
+        ))
+
+    # Update layout
+    fig.update_layout(
+        title=title,
+        yaxis_title='Value',
+        showlegend=True,
+        hovermode='closest',
+        template='plotly_white'
+    )
+
+    return pio.to_html(fig, full_html=False)
+
+
+def create_scatter_matrix(data: Dict[str, List[float]],
+                         title: str = "Scatter Matrix") -> str:
+    """Create interactive scatter matrix (pairs plot).
+
+    Args:
+        data: Dictionary of column_name: values
+        title: Chart title
+
+    Returns:
+        HTML string of interactive chart
+    """
+    import pandas as pd
+
+    # Create DataFrame
+    df = pd.DataFrame(data)
+
+    # Create scatter matrix
+    fig = go.Figure()
+
+    # Add scatter plots for each pair
+    columns = list(data.keys())
+    n = len(columns)
+
+    for i in range(n):
+        for j in range(n):
+            if i != j:
+                fig.add_trace(go.Scatter(
+                    x=data[columns[j]],
+                    y=data[columns[i]],
+                    mode='markers',
+                    name=f"{columns[i]} vs {columns[j]}",
+                    xaxis=f"x{j+1}",
+                    yaxis=f"y{i+1}",
+                    showlegend=False
+                ))
+
+    # Update layout
+    fig.update_layout(
+        title=title,
+        template='plotly_white',
+        height=800,
+        width=800
+    )
+
+    return pio.to_html(fig, full_html=False)
+
+
+def create_heatmap(data: List[List[float]],
+                   x_labels: List[str] = None,
+                   y_labels: List[str] = None,
+                   title: str = "Heatmap") -> str:
+    """Create interactive heatmap.
+
+    Args:
+        data: 2D list of values
+        x_labels: Labels for x axis
+        y_labels: Labels for y axis
+        title: Chart title
+
+    Returns:
+        HTML string of interactive chart
+    """
+    fig = go.Figure(data=go.Heatmap(
+        z=data,
+        x=x_labels,
+        y=y_labels,
+        colorscale='Viridis',
+        showscale=True
+    ))
+
+    # Update layout
+    fig.update_layout(
+        title=title,
+        template='plotly_white'
+    )
+
+    return pio.to_html(fig, full_html=False)
+
+
+def create_pareto_chart(categories: List[str],
+                       values: List[float],
+                       title: str = "Pareto Chart") -> str:
+    """Create interactive Pareto chart.
+
+    Args:
+        categories: Category names
+        values: Values for each category
+        title: Chart title
+
+    Returns:
+        HTML string of interactive chart
+    """
+    # Sort by value descending
+    sorted_data = sorted(zip(categories, values), key=lambda x: x[1], reverse=True)
+    sorted_categories = [x[0] for x in sorted_data]
+    sorted_values = [x[1] for x in sorted_data]
+
+    # Calculate cumulative percentage
+    total = sum(sorted_values)
+    cumulative = []
+    running_sum = 0
+    for val in sorted_values:
+        running_sum += val
+        cumulative.append(running_sum / total * 100)
+
+    fig = go.Figure()
+
+    # Add bars
+    fig.add_trace(go.Bar(
+        x=sorted_categories,
+        y=sorted_values,
+        name='Value',
+        marker_color='blue'
+    ))
+
+    # Add cumulative line
+    fig.add_trace(go.Scatter(
+        x=sorted_categories,
+        y=cumulative,
+        name='Cumulative %',
+        yaxis='y2',
+        line=dict(color='red', width=2),
+        mode='lines+markers'
+    ))
+
+    # Update layout
+    fig.update_layout(
+        title=title,
+        xaxis_title='Category',
+        yaxis_title='Value',
+        yaxis2=dict(
+            title='Cumulative %',
+            overlaying='y',
+            side='right',
+            range=[0, 100]
+        ),
+        showlegend=True,
+        hovermode='closest',
+        template='plotly_white'
+    )
+
+    return pio.to_html(fig, full_html=False)
+
+
 def create_diagnostic_plots(regression_data: Dict[str, Any]) -> Dict[str, str]:
     """Create regression diagnostic plots.
 

@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+{% block title %}Process Capability Report{% endblock %}
+{% block header %}Process Capability Report{% endblock %}
+{% block content %}
+<div class="section">
+    <h2>Process Capability Summary</h2>
+    <div class="interpretation {{ 'success' if data.rating in ['Excellent', 'Good'] else 'warning' }}">
+        <strong>Rating:</strong> {{ data.rating }} - {{ data.rating_desc }}
+    </div>
+
+    <div class="metric">
+        <div class="metric-value">{{ "%.4f"|format(data.cp) }}</div>
+        <div class="metric-label">Cp</div>
+    </div>
+    <div class="metric">
+        <div class="metric-value">{{ "%.4f"|format(data.cpk) }}</div>
+        <div class="metric-label">Cpk</div>
+    </div>
+    <div class="metric">
+        <div class="metric-value">{{ "%.4f"|format(data.pp) }}</div>
+        <div class="metric-label">Pp</div>
+    </div>
+    <div class="metric">
+        <div class="metric-value">{{ "%.4f"|format(data.ppk) }}</div>
+        <div class="metric-label">Ppk</div>
+    </div>
+</div>
+
+<div class="section">
+    <h2>Specification Limits</h2>
+    <table>
+        <tr><th>Parameter</th><th>Value</th></tr>
+        <tr><td>Upper Specification Limit (USL)</td><td>{{ data.usl }}</td></tr>
+        <tr><td>Lower Specification Limit (LSL)</td><td>{{ data.lsl }}</td></tr>
+        <tr><td>Target Value</td><td>{{ data.target }}</td></tr>
+        <tr><td>Process Mean</td><td>{{ "%.4f"|format(data.mean) }}</td></tr>
+        <tr><td>Process Std Dev (Within)</td><td>{{ "%.4f"|format(data.std_within) }}</td></tr>
+        <tr><td>Process Std Dev (Overall)</td><td>{{ "%.4f"|format(data.std_overall) }}</td></tr>
+    </table>
+</div>
+
+<div class="section">
+    <h2>Capability Indices</h2>
+    <table>
+        <tr><th>Index</th><th>Value</th><th>Interpretation</th></tr>
+        <tr>
+            <td>Cp</td>
+            <td>{{ "%.4f"|format(data.cp) }}</td>
+            <td>{{ 'Capable' if data.cp >= 1.33 else 'Not Capable' }}</td>
+        </tr>
+        <tr>
+            <td>Cpk</td>
+            <td>{{ "%.4f"|format(data.cpk) }}</td>
+            <td>{{ 'Capable' if data.cpk >= 1.33 else 'Not Capable' }}</td>
+        </tr>
+        <tr>
+            <td>Pp</td>
+            <td>{{ "%.4f"|format(data.pp) }}</td>
+            <td>{{ 'Capable' if data.pp >= 1.33 else 'Not Capable' }}</td>
+        </tr>
+        <tr>
+            <td>Ppk</td>
+            <td>{{ "%.4f"|format(data.ppk) }}</td>
+            <td>{{ 'Capable' if data.ppk >= 1.33 else 'Not Capable' }}</td>
+        </tr>
+    </table>
+</div>
+
+{% if chart %}
+<div class="section">
+    <h2>Capability Chart</h2>
+    <div class="chart">{{ chart }}</div>
+</div>
+{% endif %}
+
+<div class="section">
+    <h2>Interpretation</h2>
+    <div class="interpretation">
+        <strong>Key Findings:</strong>
+        <ul>
+            <li>Process capability rating: <strong>{{ data.rating }}</strong></li>
+            <li>Cp = {{ "%.4f"|format(data.cp) }} indicates {{ 'good' if data.cp >= 1.33 else 'poor' }} potential capability.</li>
+            <li>Cpk = {{ "%.4f"|format(data.cpk) }} indicates {{ 'good' if data.cpk >= 1.33 else 'poor' }} actual capability.</li>
+            {% if data.cp > data.cpk %}
+            <li>The process is not centered (Cp > Cpk).</li>
+            {% endif %}
+        </ul>
+
+        <strong>Capability Ratings:</strong>
+        <ul>
+            <li><strong>Excellent:</strong> Cpk ≥ 1.67</li>
+            <li><strong>Good:</strong> 1.33 ≤ Cpk < 1.67</li>
+            <li><strong>Marginal:</strong> 1.00 ≤ Cpk < 1.33</li>
+            <li><strong>Poor:</strong> Cpk < 1.00</li>
+        </ul>
+
+        <strong>Recommendations:</strong>
+        <ul>
+            {% if data.cpk >= 1.67 %}
+            <li class="success">Process is highly capable. Maintain current conditions.</li>
+            {% elif data.cpk >= 1.33 %}
+            <li class="success">Process is capable. Monitor for stability.</li>
+            {% elif data.cpk >= 1.0 %}
+            <li class="warning">Process is marginally capable. Improvement recommended.</li>
+            <li>Investigate sources of variation.</li>
+            <li>Consider process centering.</li>
+            {% else %}
+            <li class="warning">Process is NOT capable. Immediate action required.</li>
+            <li>Investigate and eliminate sources of variation.</li>
+            <li>Consider process redesign.</li>
+            {% endif %}
+        </ul>
+    </div>
+</div>
+
+{% endblock %}

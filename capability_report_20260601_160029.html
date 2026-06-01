@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Process Capability Report</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .header {
+            background-color: #2c3e50;
+            color: white;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+        .header p {
+            margin: 5px 0 0 0;
+            font-size: 14px;
+            opacity: 0.8;
+        }
+        .section {
+            margin: 20px 0;
+            padding: 15px;
+            background-color: #f9f9f9;
+            border-left: 4px solid #3498db;
+        }
+        .section h2 {
+            margin-top: 0;
+            color: #2c3e50;
+        }
+        .chart {
+            margin: 15px 0;
+            padding: 10px;
+            background-color: white;
+            border: 1px solid #ddd;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 10px 0;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #3498db;
+            color: white;
+        }
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+        .metric {
+            display: inline-block;
+            width: 200px;
+            margin: 5px;
+            padding: 10px;
+            background-color: white;
+            border: 1px solid #ddd;
+            text-align: center;
+        }
+        .metric-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #3498db;
+        }
+        .metric-label {
+            font-size: 12px;
+            color: #666;
+        }
+        .interpretation {
+            padding: 10px;
+            background-color: #e8f4f8;
+            border-left: 4px solid #3498db;
+            margin: 10px 0;
+        }
+        .warning {
+            background-color: #fff3cd;
+            border-left: 4px solid #ffc107;
+        }
+        .success {
+            background-color: #d4edda;
+            border-left: 4px solid #28a745;
+        }
+        .footer {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #f5f5f5;
+            text-align: center;
+            font-size: 12px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Process Capability Report</h1>
+            <p>Generated on: 2026-06-01 16:00:29</p>
+        </div>
+        
+<div class="section">
+    <h2>Process Capability Summary</h2>
+    <div class="interpretation warning">
+        <strong>Rating:</strong> Poor - Process is NOT capable, corrective action required
+    </div>
+
+    <div class="metric">
+        <div class="metric-value">0.6907</div>
+        <div class="metric-label">Cp</div>
+    </div>
+    <div class="metric">
+        <div class="metric-value">0.6448</div>
+        <div class="metric-label">Cpk</div>
+    </div>
+    <div class="metric">
+        <div class="metric-value">0.6907</div>
+        <div class="metric-label">Pp</div>
+    </div>
+    <div class="metric">
+        <div class="metric-value">0.6448</div>
+        <div class="metric-label">Ppk</div>
+    </div>
+</div>
+
+<div class="section">
+    <h2>Specification Limits</h2>
+    <table>
+        <tr><th>Parameter</th><th>Value</th></tr>
+        <tr><td>Upper Specification Limit (USL)</td><td>190</td></tr>
+        <tr><td>Lower Specification Limit (LSL)</td><td>170</td></tr>
+        <tr><td>Target Value</td><td>180</td></tr>
+        <tr><td>Process Mean</td><td>179.3356</td></tr>
+        <tr><td>Process Std Dev (Within)</td><td>4.8262</td></tr>
+        <tr><td>Process Std Dev (Overall)</td><td>4.8262</td></tr>
+    </table>
+</div>
+
+<div class="section">
+    <h2>Capability Indices</h2>
+    <table>
+        <tr><th>Index</th><th>Value</th><th>Interpretation</th></tr>
+        <tr>
+            <td>Cp</td>
+            <td>0.6907</td>
+            <td>Not Capable</td>
+        </tr>
+        <tr>
+            <td>Cpk</td>
+            <td>0.6448</td>
+            <td>Not Capable</td>
+        </tr>
+        <tr>
+            <td>Pp</td>
+            <td>0.6907</td>
+            <td>Not Capable</td>
+        </tr>
+        <tr>
+            <td>Ppk</td>
+            <td>0.6448</td>
+            <td>Not Capable</td>
+        </tr>
+    </table>
+</div>
+
+
+
+<div class="section">
+    <h2>Interpretation</h2>
+    <div class="interpretation">
+        <strong>Key Findings:</strong>
+        <ul>
+            <li>Process capability rating: <strong>Poor</strong></li>
+            <li>Cp = 0.6907 indicates poor potential capability.</li>
+            <li>Cpk = 0.6448 indicates poor actual capability.</li>
+            
+            <li>The process is not centered (Cp > Cpk).</li>
+            
+        </ul>
+
+        <strong>Capability Ratings:</strong>
+        <ul>
+            <li><strong>Excellent:</strong> Cpk ≥ 1.67</li>
+            <li><strong>Good:</strong> 1.33 ≤ Cpk < 1.67</li>
+            <li><strong>Marginal:</strong> 1.00 ≤ Cpk < 1.33</li>
+            <li><strong>Poor:</strong> Cpk < 1.00</li>
+        </ul>
+
+        <strong>Recommendations:</strong>
+        <ul>
+            
+            <li class="warning">Process is NOT capable. Immediate action required.</li>
+            <li>Investigate and eliminate sources of variation.</li>
+            <li>Consider process redesign.</li>
+            
+        </ul>
+    </div>
+</div>
+
+
+        <div class="footer">
+            <p>Generated by stats-cli v0.3.0 - AI-friendly statistical analysis CLI for manufacturing</p>
+        </div>
+    </div>
+</body>
+</html>

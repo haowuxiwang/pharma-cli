@@ -81,6 +81,7 @@ def normality(ctx, values, data_file, column):
     result = run_r_file("normality.R", data)
 
     # Generate interactive chart if requested
+    charts = {}
     if ctx.obj.get("interactive"):
         from cli.charts import create_histogram, create_qq_plot
         html_histogram = create_histogram(result, title="Normality Test - Histogram")
@@ -100,6 +101,17 @@ def normality(ctx, values, data_file, column):
             'histogram': histogram_file,
             'qq_plot': qq_file
         }
+
+    # Generate report if requested
+    if ctx.obj.get("report"):
+        from cli.reports import ReportGenerator
+        generator = ReportGenerator()
+        html = generator.generate_normality_report(result, charts)
+        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+        report_file = f"normality_report_{timestamp}.html"
+        with open(report_file, 'w', encoding='utf-8') as f:
+            f.write(html)
+        result['report_file'] = report_file
 
     _output(result)
 
@@ -126,6 +138,7 @@ def capability(ctx, values, data_file, column, usl, lsl, target):
     result = run_r_file("capability.R", data)
 
     # Generate interactive chart if requested
+    chart = None
     if ctx.obj.get("interactive"):
         from cli.charts import create_capability_chart
         html = create_capability_chart(result)
@@ -134,6 +147,18 @@ def capability(ctx, values, data_file, column, usl, lsl, target):
         with open(chart_file, 'w', encoding='utf-8') as f:
             f.write(html)
         result['interactive_chart'] = chart_file
+        chart = html
+
+    # Generate report if requested
+    if ctx.obj.get("report"):
+        from cli.reports import ReportGenerator
+        generator = ReportGenerator()
+        html = generator.generate_capability_report(result, chart)
+        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+        report_file = f"capability_report_{timestamp}.html"
+        with open(report_file, 'w', encoding='utf-8') as f:
+            f.write(html)
+        result['report_file'] = report_file
 
     _output(result)
 

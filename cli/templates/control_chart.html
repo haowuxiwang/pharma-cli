@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% block title %}Control Chart Report{% endblock %}
+{% block header %}Control Chart Report{% endblock %}
+{% block content %}
+<div class="section">
+    <h2>Control Chart Summary</h2>
+    <div class="interpretation {{ 'success' if data.summary.stable else 'warning' }}">
+        <strong>Status:</strong> {{ data.summary.message }}
+    </div>
+
+    <table>
+        <tr><th>Parameter</th><th>Value</th></tr>
+        <tr><td>Chart Type</td><td>{{ data.chart_type|upper }}</td></tr>
+        <tr><td>Center Line (CL)</td><td>{{ "%.4f"|format(data.chart.center) }}</td></tr>
+        <tr><td>Upper Control Limit (UCL)</td><td>{{ "%.4f"|format(data.chart.ucl) }}</td></tr>
+        <tr><td>Lower Control Limit (LCL)</td><td>{{ "%.4f"|format(data.chart.lcl) }}</td></tr>
+        <tr><td>Number of Points</td><td>{{ data.chart.points|length }}</td></tr>
+        <tr><td>Out of Control Points</td><td>{{ data.chart.out_of_control_points|length if data.chart.out_of_control_points is iterable else data.chart.out_of_control_points }}</td></tr>
+    </table>
+</div>
+
+{% if chart %}
+<div class="section">
+    <h2>Control Chart</h2>
+    <div class="chart">{{ chart }}</div>
+</div>
+{% endif %}
+
+{% if data.chart.violations %}
+<div class="section">
+    <h2>Rule Violations</h2>
+    <table>
+        <tr><th>Rule</th><th>Description</th><th>Points</th></tr>
+        {% for rule_name, rule_data in data.chart.violations.items() %}
+        <tr>
+            <td>{{ rule_name }}</td>
+            <td>{{ rule_data.description }}</td>
+            <td>{{ rule_data.indices }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</div>
+{% endif %}
+
+<div class="section">
+    <h2>Interpretation</h2>
+    <div class="interpretation">
+        <strong>Key Findings:</strong>
+        <ul>
+            {% if data.summary.stable %}
+            <li class="success">The process is in statistical control.</li>
+            <li>No special cause variation detected.</li>
+            <li>Process is predictable and stable.</li>
+            {% else %}
+            <li class="warning">The process is NOT in statistical control.</li>
+            <li>Special cause variation detected.</li>
+            <li>Process is unpredictable.</li>
+            {% endif %}
+        </ul>
+
+        <strong>Western Electric Rules:</strong>
+        <ul>
+            <li>Rule 1: Point beyond 3-sigma</li>
+            <li>Rule 2: 2 of 3 consecutive points beyond 2-sigma</li>
+            <li>Rule 3: 4 of 5 consecutive points beyond 1-sigma</li>
+            <li>Rule 4: 8 consecutive points on same side of center</li>
+            <li>Rule 5: 6 consecutive points steadily increasing or decreasing</li>
+        </ul>
+
+        <strong>Recommendations:</strong>
+        <ul>
+            {% if data.summary.stable %}
+            <li>Process is stable. Continue monitoring.</li>
+            <li>Use current control limits for future monitoring.</li>
+            <li>Consider process capability analysis.</li>
+            {% else %}
+            <li>Investigate the cause of out-of-control points.</li>
+            <li>Remove special cause variation.</li>
+            <li>Recalculate control limits after correction.</li>
+            <li>Implement corrective actions.</li>
+            {% endif %}
+        </ul>
+    </div>
+</div>
+
+{% endblock %}
