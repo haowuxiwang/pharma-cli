@@ -8,119 +8,290 @@ from datetime import datetime
 
 from cli.r_engine import run_r_file
 from cli.validators import validate_values
+from cli.data_cleaner import clean_values, detect_encoding, detect_delimiter, CleaningReport
 
 
-def load_data(values, data_file, column):
-    """Load data from CLI arguments or file."""
+def load_data(values, data_file, column, sheet=None):
+    """Load data from CLI arguments or file.
+
+    All data sources pass through the cleaning layer to handle
+    NaN, Inf, non-numeric values, encoding issues, etc.
+    """
     if values:
-        return {"values": list(values)}
+        raw = list(values)
+        try:
+            cleaned, report = clean_values(raw, min_count=1)
+        except ValueError as e:
+            raise click.UsageError(str(e))
+        result = {"values": cleaned}
+        if report.has_changes():
+            result["_cleaning_report"] = report.to_dict()
+        return result
     elif data_file:
         path = Path(data_file)
 
         # Support Excel files directly
         if path.suffix in [".xlsx", ".xls"]:
-            try:
-                import pandas as pd
-                df = pd.read_excel(path)
+            return _load_excel(path, column, sheet)
 
-                if column:
-                    # Try to find column by name or index
-                    col_found = False
-
-                    # Try as column name (string match)
-                    if column in df.columns:
-                        values = df[column].dropna().tolist()
-                        col_found = True
-
-                    # Try as column name (numeric match)
-                    if not col_found:
-                        try:
-                            col_num = float(column)
-                            for col in df.columns:
-                                if float(col) == col_num:
-                                    values = df[col].dropna().tolist()
-                                    col_found = True
-                                    break
-                        except (ValueError, TypeError):
-                            pass
-
-                    # Try as column index
-                    if not col_found:
-                        try:
-                            col_idx = int(column)
-                            if 0 <= col_idx < len(df.columns):
-                                values = df.iloc[:, col_idx].dropna().tolist()
-                                col_found = True
-                        except (ValueError, IndexError):
-                            pass
-
-                    if not col_found:
-                        raise click.UsageError(f"Column '{column}' not found in Excel file")
-                else:
-                    # Use first numeric column
-                    numeric_cols = df.select_dtypes(include=[np.number]).columns
-                    if len(numeric_cols) > 0:
-                        values = df[numeric_cols[0]].dropna().tolist()
-                    else:
-                        raise click.UsageError("No numeric columns found in Excel file")
-
-                return {"values": [float(v) for v in values]}
-            except ImportError:
-                raise click.UsageError("pandas is required to read Excel files. Install with: pip install pandas")
-
-        # Read text-based files
-        content = path.read_text(encoding="utf-8").strip()
+        # Read text-based files with encoding detection
+        encoding = detect_encoding(str(path))
+        content = path.read_text(encoding=encoding).strip()
 
         if path.suffix == ".csv":
-            import csv
-            import io
-            reader = csv.DictReader(io.StringIO(content))
-            if column:
-                # Try to find column by name or index
-                try:
-                    values = [float(row[column]) for row in reader]
-                except KeyError:
-                    # Try as column index
-                    try:
-                        col_idx = int(column)
-                        reader = csv.DictReader(io.StringIO(content))
-                        values = [float(list(row.values())[col_idx]) for row in reader]
-                    except (ValueError, IndexError):
-                        raise click.UsageError(f"Column '{column}' not found in CSV file")
-            else:
-                # Use first numeric column
-                first_row = next(reader)
-                col_name = None
-                for k, v in first_row.items():
-                    try:
-                        float(v)
-                        col_name = k
-                        break
-                    except ValueError:
-                        continue
-
-                if col_name is None:
-                    raise click.UsageError("No numeric columns found in CSV file")
-
-                reader = csv.DictReader(io.StringIO(content))
-                values = [float(row[col_name]) for row in reader]
-            return {"values": values}
+            return _load_csv(path, content, column, encoding)
         elif path.suffix == ".json":
-            return json.loads(content)
+            return _load_json(content)
         else:
             # Plain text, one value per line
-            values = [float(line) for line in content.splitlines() if line.strip()]
-            return {"values": values}
+            return _load_text(content)
     else:
         # Read from stdin
         content = sys.stdin.read().strip()
         try:
-            return json.loads(content)
+            data = json.loads(content)
+            if isinstance(data, dict) and "values" in data:
+                try:
+                    cleaned, report = clean_values(data["values"], min_count=1)
+                except ValueError as e:
+                    raise click.UsageError(str(e))
+                data["values"] = cleaned
+                if report.has_changes():
+                    data["_cleaning_report"] = report.to_dict()
+                return data
+            return data
         except json.JSONDecodeError:
-            values = [float(line) for line in content.splitlines() if line.strip()]
-            return {"values": values}
+            return _load_text(content)
+
+
+def _load_excel(path, column, sheet=None):
+    """Load data from Excel file with proper error handling."""
+    try:
+        import pandas as pd
+    except ImportError:
+        raise click.UsageError("pandas is required to read Excel files. Install with: pip install pandas")
+
+    try:
+        # When sheet is None, pd.read_excel returns first sheet as DataFrame
+        # When sheet is a string, it returns that specific sheet as DataFrame
+        # When sheet is 0, it returns first sheet as DataFrame
+        if sheet is None:
+            df = pd.read_excel(path, sheet_name=0)  # Read first sheet
+        else:
+            df = pd.read_excel(path, sheet_name=sheet)
+    except Exception as e:
+        raise click.UsageError(f"Failed to read Excel file: {e}")
+
+    if column:
+        values = _extract_excel_column(df, column, path)
+    else:
+        # Use first numeric column
+        numeric_cols = df.select_dtypes(include=[np.number]).columns
+        if len(numeric_cols) == 0:
+            raise click.UsageError("No numeric columns found in Excel file")
+        values = df[numeric_cols[0]].dropna().tolist()
+
+    # Convert to float, handling datetime columns
+    raw_values = []
+    for v in values:
+        if isinstance(v, (int, float)):
+            raw_values.append(v)
+        elif hasattr(v, 'timestamp'):
+            # datetime-like: convert to timestamp
+            raw_values.append(v.timestamp())
+        else:
+            raw_values.append(v)
+
+    try:
+        cleaned, report = clean_values(raw_values, min_count=1)
+    except ValueError as e:
+        raise click.UsageError(str(e))
+    result = {"values": cleaned}
+    if report.has_changes():
+        result["_cleaning_report"] = report.to_dict()
+    return result
+
+
+def _extract_excel_column(df, column, path):
+    """Extract a column from Excel DataFrame by name, numeric name, or index."""
+    # Try as column name (string match)
+    if column in df.columns:
+        return df[column].dropna().tolist()
+
+    # Try as column name (numeric match)
+    try:
+        col_num = float(column)
+        for col in df.columns:
+            if float(col) == col_num:
+                return df[col].dropna().tolist()
+    except (ValueError, TypeError):
+        pass
+
+    # Try as column index
+    try:
+        col_idx = int(column)
+        if 0 <= col_idx < len(df.columns):
+            return df.iloc[:, col_idx].dropna().tolist()
+    except (ValueError, IndexError):
+        pass
+
+    raise click.UsageError(f"Column '{column}' not found in Excel file")
+
+
+def _load_csv(path, content, column, encoding="utf-8"):
+    """Load data from CSV file with delimiter detection and BOM handling."""
+    import csv
+    import io
+
+    # Detect delimiter
+    delimiter = detect_delimiter(str(path), encoding)
+
+    # Strip BOM from content
+    if content.startswith('﻿'):
+        content = content[1:]
+
+    reader = csv.DictReader(io.StringIO(content), delimiter=delimiter)
+
+    if column:
+        values = _extract_csv_column(reader, column, content, delimiter)
+    else:
+        # Use first numeric column
+        first_row = next(reader)
+        col_name = None
+        for k, v in first_row.items():
+            try:
+                float(v)
+                col_name = k
+                break
+            except (ValueError, TypeError):
+                continue
+
+        if col_name is None:
+            raise click.UsageError("No numeric columns found in CSV file")
+
+        reader = csv.DictReader(io.StringIO(content), delimiter=delimiter)
+        values = []
+        for row in reader:
+            try:
+                values.append(float(row[col_name]))
+            except (ValueError, TypeError):
+                pass  # Skip non-numeric rows
+
+    try:
+        cleaned, report = clean_values(values, min_count=1)
+    except ValueError as e:
+        raise click.UsageError(str(e))
+    result = {"values": cleaned}
+    if report.has_changes():
+        result["_cleaning_report"] = report.to_dict()
+    return result
+
+
+def _extract_csv_column(reader, column, content, delimiter):
+    """Extract a column from CSV by name or index."""
+    import csv
+    import io
+
+    # Try as column name
+    try:
+        values = []
+        for row in reader:
+            try:
+                values.append(float(row[column]))
+            except (ValueError, TypeError):
+                pass  # Skip non-numeric rows
+        if values:
+            return values
+    except KeyError:
+        pass
+
+    # Try as column index
+    try:
+        col_idx = int(column)
+        reader = csv.DictReader(io.StringIO(content), delimiter=delimiter)
+        values = []
+        for row in reader:
+            try:
+                values.append(float(list(row.values())[col_idx]))
+            except (ValueError, TypeError, IndexError):
+                pass
+        if values:
+            return values
+    except (ValueError, IndexError):
+        pass
+
+    raise click.UsageError(f"Column '{column}' not found in CSV file")
+
+
+def _load_json(content):
+    """Load data from JSON content."""
+    try:
+        data = json.loads(content)
+    except json.JSONDecodeError as e:
+        raise click.UsageError(f"Invalid JSON: {e}")
+
+    if isinstance(data, dict) and "values" in data:
+        try:
+            cleaned, report = clean_values(data["values"], min_count=1)
+        except ValueError as e:
+            raise click.UsageError(str(e))
+        data["values"] = cleaned
+        if report.has_changes():
+            data["_cleaning_report"] = report.to_dict()
+    return data
+
+
+def _load_text(content):
+    """Load data from plain text (one value per line)."""
+    raw_values = []
+    for line in content.splitlines():
+        line = line.strip()
+        if line:
+            try:
+                raw_values.append(float(line))
+            except ValueError:
+                pass  # Skip non-numeric lines
+
+    try:
+        cleaned, report = clean_values(raw_values, min_count=1)
+    except ValueError as e:
+        raise click.UsageError(str(e))
+    result = {"values": cleaned}
+    if report.has_changes():
+        result["_cleaning_report"] = report.to_dict()
+    return result
 
 
 def output(data):
-    """Output result as JSON."""
-    click.echo(json.dumps(data, indent=2, ensure_ascii=False))
+    """Output result as JSON with metadata wrapper.
+
+    Wraps the result with standard metadata:
+    - status: "success" or "error"
+    - version: CLI version
+    - timestamp: ISO format timestamp
+
+    If data contains an error, formats as error response.
+    """
+    from datetime import datetime
+
+    # Check if data is an error response
+    if isinstance(data, dict) and data.get("error"):
+        wrapped = {
+            "status": "error",
+            "version": "0.3.0",
+            "timestamp": datetime.utcnow().isoformat() + "Z",
+            "error": True,
+            "error_type": data.get("error_type", "UNKNOWN_ERROR"),
+            "message": data.get("message", "Unknown error"),
+        }
+        if "suggestion" in data:
+            wrapped["suggestion"] = data["suggestion"]
+    else:
+        wrapped = {
+            "status": "success",
+            "version": "0.3.0",
+            "timestamp": datetime.utcnow().isoformat() + "Z",
+            "data": data,
+        }
+
+    click.echo(json.dumps(wrapped, indent=2, ensure_ascii=False))

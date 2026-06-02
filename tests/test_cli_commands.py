@@ -12,6 +12,14 @@ def runner():
     return CliRunner()
 
 
+def get_data(result):
+    """Extract data from wrapped JSON output."""
+    output = json.loads(result.output)
+    if "data" in output:
+        return output["data"]
+    return output
+
+
 class TestDescriptiveCommand:
     """Tests for descriptive command."""
 
@@ -19,7 +27,7 @@ class TestDescriptiveCommand:
         """Test descriptive with values."""
         result = runner.invoke(main, ['descriptive', '-v', '10.2', '-v', '10.5', '-v', '10.1'])
         assert result.exit_code == 0
-        data = json.loads(result.output)
+        data = get_data(result)
         assert 'n' in data
         assert 'mean' in data
         assert 'std' in data
@@ -29,7 +37,7 @@ class TestDescriptiveCommand:
         """Test descriptive with file."""
         result = runner.invoke(main, ['descriptive', '-f', sample_csv_file, '-c', 'measurement'])
         assert result.exit_code == 0
-        data = json.loads(result.output)
+        data = get_data(result)
         assert 'n' in data
         assert data['n'] == 5
 
@@ -37,7 +45,7 @@ class TestDescriptiveCommand:
         """Test descriptive with no data."""
         result = runner.invoke(main, ['descriptive'])
         assert result.exit_code != 0
-        assert 'At least 1 values required' in result.output
+        assert 'valid numeric values' in result.output
 
 
 class TestNormalityCommand:
@@ -47,7 +55,7 @@ class TestNormalityCommand:
         """Test normality with values."""
         result = runner.invoke(main, ['normality', '-v', '10.2', '-v', '10.5', '-v', '10.1', '-v', '10.3', '-v', '10.4'])
         assert result.exit_code == 0
-        data = json.loads(result.output)
+        data = get_data(result)
         assert 'shapiro_wilk' in data
         assert 'is_normal' in data
 
@@ -55,7 +63,7 @@ class TestNormalityCommand:
         """Test normality with file."""
         result = runner.invoke(main, ['normality', '-f', sample_csv_file, '-c', 'measurement'])
         assert result.exit_code == 0
-        data = json.loads(result.output)
+        data = get_data(result)
         assert 'shapiro_wilk' in data
 
 
@@ -66,7 +74,7 @@ class TestCapabilityCommand:
         """Test capability with values."""
         result = runner.invoke(main, ['capability', '-v', '10.2', '-v', '10.5', '-v', '10.1', '--usl', '11.0', '--lsl', '9.0'])
         assert result.exit_code == 0
-        data = json.loads(result.output)
+        data = get_data(result)
         assert 'cp' in data
         assert 'cpk' in data
         assert 'rating' in data
@@ -75,7 +83,7 @@ class TestCapabilityCommand:
         """Test capability with file."""
         result = runner.invoke(main, ['capability', '-f', sample_csv_file, '-c', 'measurement', '--usl', '11.0', '--lsl', '9.0'])
         assert result.exit_code == 0
-        data = json.loads(result.output)
+        data = get_data(result)
         assert 'cp' in data
 
     def test_capability_no_limits(self, runner):
@@ -98,7 +106,7 @@ class TestControlChartCommand:
         """Test I-MR chart."""
         result = runner.invoke(main, ['control-chart', 'imr', '-v', '10.2', '-v', '10.5', '-v', '10.1', '-v', '10.3', '-v', '10.4'])
         assert result.exit_code == 0
-        data = json.loads(result.output)
+        data = get_data(result)
         assert 'chart_type' in data
         assert data['chart_type'] == 'imr'
 
@@ -106,7 +114,7 @@ class TestControlChartCommand:
         """Test X-bar chart."""
         result = runner.invoke(main, ['control-chart', 'xbar', '-v', '10.2', '-v', '10.5', '-v', '10.1', '-v', '10.3', '-v', '10.4', '-v', '10.6', '-v', '10.3', '-v', '10.5', '-v', '10.2', '-v', '10.4'])
         assert result.exit_code == 0
-        data = json.loads(result.output)
+        data = get_data(result)
         assert 'chart_type' in data
         assert data['chart_type'] == 'xbar'
 
@@ -114,7 +122,7 @@ class TestControlChartCommand:
         """Test control chart with file."""
         result = runner.invoke(main, ['control-chart', 'imr', '-f', sample_csv_file, '-c', 'measurement'])
         assert result.exit_code == 0
-        data = json.loads(result.output)
+        data = get_data(result)
         assert 'chart_type' in data
 
 
@@ -125,7 +133,7 @@ class TestTtestCommand:
         """Test one-sample t-test."""
         result = runner.invoke(main, ['ttest', 'one_sample', '-v', '10.2', '-v', '10.5', '-v', '10.1', '--mu', '10.0'])
         assert result.exit_code == 0
-        data = json.loads(result.output)
+        data = get_data(result)
         assert 'test_type' in data
         assert data['test_type'] == 'one_sample'
 
@@ -133,7 +141,7 @@ class TestTtestCommand:
         """Test two-sample t-test."""
         result = runner.invoke(main, ['ttest', 'two_sample', '-v', '10.2', '-v', '10.5', '-v', '10.1', '-v2', '11.3', '-v2', '11.5', '-v2', '11.1'])
         assert result.exit_code == 0
-        data = json.loads(result.output)
+        data = get_data(result)
         assert 'test_type' in data
         assert data['test_type'] == 'two_sample'
 
@@ -141,7 +149,7 @@ class TestTtestCommand:
         """Test paired t-test."""
         result = runner.invoke(main, ['ttest', 'paired', '-v', '10.2', '-v', '10.5', '-v', '10.1', '-v2', '10.8', '-v2', '10.9', '-v2', '10.7'])
         assert result.exit_code == 0
-        data = json.loads(result.output)
+        data = get_data(result)
         assert 'test_type' in data
         assert data['test_type'] == 'paired'
 
@@ -153,7 +161,7 @@ class TestAnovaCommand:
         """Test one-way ANOVA."""
         result = runner.invoke(main, ['anova', 'one_way', '-g', '[10.2,10.5,10.1]', '-g', '[11.3,11.5,11.1]'])
         assert result.exit_code == 0
-        data = json.loads(result.output)
+        data = get_data(result)
         assert 'anova_type' in data
         assert data['anova_type'] == 'one_way'
 
@@ -171,7 +179,7 @@ class TestRegressionCommand:
         """Test linear regression."""
         result = runner.invoke(main, ['regression', '--x', '1', '--x', '2', '--x', '3', '--y', '2', '--y', '4', '--y', '6'])
         assert result.exit_code == 0
-        data = json.loads(result.output)
+        data = get_data(result)
         assert 'regression_type' in data
         assert data['regression_type'] == 'linear'
         assert 'r_squared' in data
@@ -183,7 +191,7 @@ class TestRegressionCommand:
         csv_file.write_text(csv_content)
         result = runner.invoke(main, ['regression', '-f', str(csv_file)])
         assert result.exit_code == 0
-        data = json.loads(result.output)
+        data = get_data(result)
         assert 'regression_type' in data
 
 
@@ -194,7 +202,7 @@ class TestCorrelationCommand:
         """Test Pearson correlation."""
         result = runner.invoke(main, ['correlation', '--x', '1', '--x', '2', '--x', '3', '--y', '2', '--y', '4', '--y', '6'])
         assert result.exit_code == 0
-        data = json.loads(result.output)
+        data = get_data(result)
         assert 'method' in data
         assert data['method'] == 'pearson'
         assert 'correlation' in data
@@ -203,7 +211,7 @@ class TestCorrelationCommand:
         """Test Spearman correlation."""
         result = runner.invoke(main, ['correlation', '--x', '1', '--x', '2', '--x', '3', '--y', '2', '--y', '4', '--y', '6', '--method', 'spearman'])
         assert result.exit_code == 0
-        data = json.loads(result.output)
+        data = get_data(result)
         assert data['method'] == 'spearman'
 
 
@@ -214,7 +222,7 @@ class TestOutlierCommand:
         """Test Grubbs outlier detection."""
         result = runner.invoke(main, ['outlier', '-v', '10.2', '-v', '10.5', '-v', '10.1', '-v', '15.0', '--method', 'grubbs'])
         assert result.exit_code == 0
-        data = json.loads(result.output)
+        data = get_data(result)
         assert 'method' in data
         assert data['method'] == 'grubbs'
         assert 'outliers' in data
@@ -233,7 +241,7 @@ class TestTrendCommand:
         """Test CUSUM trend analysis."""
         result = runner.invoke(main, ['trend', '-v', '10.2', '-v', '10.5', '-v', '10.1', '-v', '10.3', '-v', '10.4', '--test-type', 'cusum', '--target', '10.3'])
         assert result.exit_code == 0
-        data = json.loads(result.output)
+        data = get_data(result)
         assert 'test_type' in data
         assert data['test_type'] == 'cusum'
 
@@ -245,7 +253,7 @@ class TestDoeCommand:
         """Test full factorial DOE."""
         result = runner.invoke(main, ['doe', 'full_factorial', '-f', '{"name":"Temp","levels":3}', '-f', '{"name":"Time","levels":2}'])
         assert result.exit_code == 0
-        data = json.loads(result.output)
+        data = get_data(result)
         assert 'doe_type' in data
         assert data['doe_type'] == 'full_factorial'
 
@@ -257,14 +265,14 @@ class TestPlotOption:
         """Test --plot option with control chart."""
         result = runner.invoke(main, ['--plot', 'control-chart', 'imr', '-v', '10.2', '-v', '10.5', '-v', '10.1', '-v', '10.3', '-v', '10.4'])
         assert result.exit_code == 0
-        data = json.loads(result.output)
+        data = get_data(result)
         assert 'plot' in data
 
     def test_plot_option_with_normality(self, runner):
         """Test --plot option with normality."""
         result = runner.invoke(main, ['--plot', 'normality', '-v', '10.2', '-v', '10.5', '-v', '10.1', '-v', '10.3', '-v', '10.4'])
         assert result.exit_code == 0
-        data = json.loads(result.output)
+        data = get_data(result)
         assert 'plot' in data
 
 
@@ -275,28 +283,28 @@ class TestLoadData:
         """Test loading data from values."""
         result = runner.invoke(main, ['descriptive', '-v', '10.2', '-v', '10.5', '-v', '10.1'])
         assert result.exit_code == 0
-        data = json.loads(result.output)
+        data = get_data(result)
         assert data['n'] == 3
 
     def test_load_data_from_csv(self, runner, sample_csv_file):
         """Test loading data from CSV file."""
         result = runner.invoke(main, ['descriptive', '-f', sample_csv_file, '-c', 'measurement'])
         assert result.exit_code == 0
-        data = json.loads(result.output)
+        data = get_data(result)
         assert data['n'] == 5
 
     def test_load_data_from_txt(self, runner, sample_txt_file):
         """Test loading data from TXT file."""
         result = runner.invoke(main, ['descriptive', '-f', sample_txt_file])
         assert result.exit_code == 0
-        data = json.loads(result.output)
+        data = get_data(result)
         assert data['n'] == 5
 
     def test_load_data_from_json(self, runner, sample_json_file):
         """Test loading data from JSON file."""
         result = runner.invoke(main, ['descriptive', '-f', sample_json_file])
         assert result.exit_code == 0
-        data = json.loads(result.output)
+        data = get_data(result)
         assert data['n'] == 5
 
 
@@ -307,5 +315,9 @@ class TestOutput:
         """Test JSON output format."""
         result = runner.invoke(main, ['descriptive', '-v', '10.2', '-v', '10.5', '-v', '10.1'])
         assert result.exit_code == 0
-        data = json.loads(result.output)
-        assert isinstance(data, dict)
+        output = json.loads(result.output)
+        assert 'status' in output
+        assert 'version' in output
+        assert 'timestamp' in output
+        assert 'data' in output
+        assert output['status'] == 'success'

@@ -10,10 +10,11 @@ from cli.commands.utils import load_data, output
 @click.option("--values", "-v", multiple=True, type=float, help="Data values")
 @click.option("--file", "-f", "data_file", type=click.Path(exists=True), help="File with data")
 @click.option("--column", "-c", default=None, help="Column name if file is CSV/TSV")
+@click.option("--sheet", "-s", default=None, help="Excel sheet name (default: first sheet)")
 @click.pass_context
-def normality(ctx, values, data_file, column):
+def normality(ctx, values, data_file, column, sheet):
     """Normality tests: Shapiro-Wilk, Anderson-Darling, Lilliefors."""
-    data = load_data(values, data_file, column)
+    data = load_data(values, data_file, column, sheet)
     if ctx.obj.get("generate_plot"):
         data["generate_plot"] = True
     result = run_r_file("normality.R", data)

@@ -94,38 +94,42 @@ class TestRunRScript:
     @patch("cli.r_engine.find_rscript")
     @patch("subprocess.run")
     def test_execution_error(self, mock_run, mock_find_rscript):
-        """Test R script execution with error."""
+        """Test R script execution with error returns error dict."""
         mock_find_rscript.return_value = "/usr/bin/Rscript"
         mock_run.return_value = MagicMock(
             returncode=1,
             stdout="",
             stderr="Error in script"
         )
-        with pytest.raises(RuntimeError, match="R script failed"):
-            run_r_script('stop("Error in script")')
+        result = run_r_script('stop("Error in script")')
+        assert result["error"] is True
+        assert result["error_type"] == "R_SCRIPT_ERROR"
+        assert "Error in script" in result["message"]
 
     @patch("cli.r_engine.find_rscript")
     @patch("subprocess.run")
     def test_no_output(self, mock_run, mock_find_rscript):
-        """Test R script execution with no output."""
+        """Test R script execution with no output returns error dict."""
         mock_find_rscript.return_value = "/usr/bin/Rscript"
         mock_run.return_value = MagicMock(
             returncode=0,
             stdout="",
             stderr=""
         )
-        with pytest.raises(RuntimeError, match="R script produced no output"):
-            run_r_script('')
+        result = run_r_script('')
+        assert result["error"] is True
+        assert result["error_type"] == "NO_OUTPUT"
 
     @patch("cli.r_engine.find_rscript")
     @patch("subprocess.run")
     def test_timeout(self, mock_run, mock_find_rscript):
-        """Test R script execution timeout."""
+        """Test R script execution timeout returns error dict."""
         import subprocess
         mock_find_rscript.return_value = "/usr/bin/Rscript"
         mock_run.side_effect = subprocess.TimeoutExpired(cmd="Rscript", timeout=60)
-        with pytest.raises(subprocess.TimeoutExpired):
-            run_r_script('Sys.sleep(120)', timeout=60)
+        result = run_r_script('Sys.sleep(120)', timeout=60)
+        assert result["error"] is True
+        assert result["error_type"] == "TIMEOUT"
 
 
 class TestRunRFile:
@@ -146,23 +150,25 @@ class TestRunRFile:
 
     @patch("cli.r_engine.find_rscript")
     def test_file_not_found(self, mock_find_rscript):
-        """Test R file not found."""
+        """Test R file not found returns error dict."""
         mock_find_rscript.return_value = "/usr/bin/Rscript"
-        with pytest.raises(FileNotFoundError, match="R script not found"):
-            run_r_file("/nonexistent/path/script.R")
+        result = run_r_file("/nonexistent/path/script.R")
+        assert result["error"] is True
+        assert result["error_type"] == "SCRIPT_NOT_FOUND"
 
     @patch("cli.r_engine.find_rscript")
     @patch("subprocess.run")
     def test_execution_error(self, mock_run, mock_find_rscript, mock_r_script_error):
-        """Test R file execution with error."""
+        """Test R file execution with error returns error dict."""
         mock_find_rscript.return_value = "/usr/bin/Rscript"
         mock_run.return_value = MagicMock(
             returncode=1,
             stdout="",
             stderr="Error in script"
         )
-        with pytest.raises(RuntimeError, match="R script failed"):
-            run_r_file(mock_r_script_error)
+        result = run_r_file(mock_r_script_error)
+        assert result["error"] is True
+        assert result["error_type"] == "R_SCRIPT_ERROR"
 
     @patch("cli.r_engine.find_rscript")
     @patch("subprocess.run")
