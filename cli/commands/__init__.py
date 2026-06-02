@@ -25,6 +25,7 @@ from .reliability import reliability
 from .multivariate import multivariate
 from .timeseries import timeseries
 from .power import power
+from .advanced import advanced
 
 __all__ = [
     "descriptive",
@@ -53,4 +54,5 @@ __all__ = [
     "multivariate",
     "timeseries",
     "power",
+    "advanced",
 ]

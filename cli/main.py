@@ -28,6 +28,7 @@ from cli.commands import (
     multivariate,
     timeseries,
     power,
+    advanced,
 )
 
 
@@ -72,6 +73,7 @@ main.add_command(reliability)
 main.add_command(multivariate)
 main.add_command(timeseries)
 main.add_command(power)
+main.add_command(advanced)
 
 
 if __name__ == "__main__":
