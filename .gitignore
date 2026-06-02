@@ -79,6 +79,7 @@ Thumbs.db
 output/*.html
 output/*.png
 output/*.pdf
+*.html
 
 # Documentation folder (local docs, not for distribution)
 docs/
