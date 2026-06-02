@@ -141,7 +141,7 @@ cd stats-cli && pip install -e .
 
 ---
 
-## All Commands (28 commands)
+## All Commands (26 commands)
 
 ### Data Exploration
 ```bash

@@ -90,6 +90,7 @@ excel/
 test_data.csv
 test_data.txt
 test_data.json
+test_arima.*
 
 # Keep important files
 !requirements*.txt
