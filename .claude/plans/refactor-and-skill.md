@@ -1,87 +1,71 @@
-# 飞书 Aily Skill 打包计划
+# Python Fallback 实现计划
 
-## 当前状态
+## 问题
 
-| 项目 | 状态 |
-|------|------|
-| SKILL.md 格式 | ✅ YAML frontmatter 正确 |
-| Git 未提交文件 | ⚠️ 12 个修改 + 33 个新文件 |
-| 磁盘整洁度 | ⚠️ 有临时文件需清理 |
-| .gitignore | ✅ 已排除 docs/ excel/ |
+飞书 Aily 环境没有 R，导致 22/24 个命令失败。只有 `explore` 和 `discover` 可用。
 
-## 执行计划
+## 解决方案
 
-### Step 1: 清理临时文件
+添加 Python fallback，让基础统计功能在没有 R 的情况下也能工作。
 
-删除以下文件/目录：
-- `test_arima.R`, `test_arima.json`, `test_data.csv`（根目录临时测试文件）
-- `__pycache__/`（3 个目录）
-- `.coverage`, `htmlcov/`, `.pytest_cache/`
-- `pharma_cli.egg-info/`, `output/`
+## 实现计划
 
-### Step 2: 提交所有更改
+### Step 1: 添加 scipy 依赖
 
-```bash
-git add -A
-git commit -m "feat: complete CLI refactoring and skill integration
+修改 `setup.py`，添加 `scipy` 到 `install_requires`。
 
-- 26 commands fully implemented
-- Real data testing with 6 Excel files
-- SKILL.md with decision trees and workflows
-- 171 tests, 60% coverage
-- Dirty data handling (NaN, Inf, encoding, multi-sheet)"
+### Step 2: 创建 Python 统计引擎
+
+新建 `cli/py_engine.py`，实现以下功能：
+
+```python
+# Tier 1 - 纯 numpy（已有）
+def descriptive(values)      # 均值、中位数、标准差、四分位、CI
+def clean_data(values, method)  # drop/impute/winsorize/clip
+def transform_data(values, method)  # log/sqrt/boxcox/standardize
+def outlier_detection(values, method)  # iqr/zscore
+
+# Tier 2 - 需要 scipy
+def normality_test(values)   # Shapiro-Wilk, Anderson-Darling
+def ttest(data, type)        # 单样本/双样本/配对
+def correlation(x, y, method)  # Pearson/Spearman/Kendall
+def nonparametric_test(data, type)  # Mann-Whitney, Kruskal-Wallis
 ```
 
-### Step 3: 打包 Skill 文件
+### Step 3: 修改 r_engine.py
 
-打包结构：
-```
-stats-cli.skill (zip)
-├── SKILL.md              # 根目录，包含 YAML frontmatter
-├── README.md
-├── LICENSE
-├── setup.py
-├── requirements-test.txt
-├── cli/
-│   ├── __init__.py
-│   ├── __main__.py
-│   ├── main.py
-│   ├── r_engine.py
-│   ├── data_cleaner.py
-│   ├── validators.py
-│   ├── charts.py
-│   ├── reports.py
-│   └── commands/
-│       ├── __init__.py
-│       ├── utils.py
-│       ├── descriptive.py
-│       ├── ... (26 个命令)
-│       └── explore.py
-└── r_scripts/
-    ├── descriptive.R
-    ├── ... (23 个 R 脚本)
-    └── timeseries.R
+在 `run_r_file()` 中添加 R 检测：
+- 如果 R 未安装，返回 `{"error": True, "error_type": "R_NOT_FOUND", "suggestion": "Install R or use Python fallback"}`
+- 不再抛出 RuntimeError
+
+### Step 4: 修改命令添加 fallback
+
+对每个支持 Python fallback 的命令：
+```python
+@click.command()
+def descriptive(...):
+    data = load_data(...)
+    try:
+        result = run_r_file("descriptive.R", data)
+    except RNotFoundError:
+        result = py_descriptive(data)  # Python fallback
+    output(result)
 ```
 
-排除项：
-- `docs/`, `excel/`（测试产物）
-- `__pycache__/`, `.git/`, `.coverage`, `htmlcov/`
-- `tests/`（测试代码不需要分发）
-- `.claude/`（Claude 配置）
-- 临时文件
+### Step 5: 更新 SKILL.md
 
-打包命令：
-```bash
-cd D:\learn\claudecode\pharma-cli
-zip -r stats-cli.skill \
-  SKILL.md \
-  README.md \
-  LICENSE \
-  setup.py \
-  requirements-test.txt \
-  cli/ \
-  r_scripts/ \
-  -x "*.pyc" -x "__pycache__/*" -x ".git/*"
+添加说明：
+```
+## Python Fallback
+
+如果 R 未安装，以下命令仍可使用 Python 实现：
+- descriptive, clean, transform, outlier (IQR/Z-score)
+- normality, ttest, correlation, nonparametric (需要 scipy)
 ```
 
-注意：SKILL.md 需要复制到根目录
+## 预期结果
+
+| 场景 | 之前 | 之后 |
+|------|------|------|
+| 有 R 环境 | 24/24 命令可用 | 24/24 命令可用 |
+| 无 R 环境 | 2/24 命令可用 | 10/24 命令可用 |
