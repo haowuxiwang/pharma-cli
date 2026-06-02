@@ -5,6 +5,57 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.0] - 2026-06-02
+
+### Added
+
+#### New Commands (11 new commands, total 26)
+- **explore**: Inspect Excel/CSV file structure (columns, types, missing values)
+- **discover**: List all available commands and JSON schemas
+- **reliability**: Weibull analysis, Kaplan-Meier, distribution fitting, stability/shelf life
+- **multivariate**: PCA, cluster analysis (hierarchical/k-means), discriminant, correlation matrix
+- **timeseries**: Exponential smoothing, ARIMA, seasonal decomposition, ACF/PACF
+- **power**: Sample size and power analysis (t-test, ANOVA, proportion)
+- **gage-rr**: MSA - crossed, nested, attribute agreement, bias, linearity, stability
+- **clean**: Data cleaning - drop, impute mean/median, winsorize, clip
+- **transform**: Data transformation - log, sqrt, Box-Cox, Johnson, rank, standardize
+- **nonparametric chi_square**: Chi-square goodness of fit and independence tests
+- **nonparametric friedman**: Friedman test for repeated measures
+
+#### Regression Extensions
+- **Multiple regression**: Multiple predictors with VIF diagnostics
+- **Stepwise regression**: Forward, backward, bidirectional selection
+- **Logistic regression**: Binary classification with odds ratios
+
+#### Capability Enhancements
+- **Cpm**: Taguchi capability index
+- **Confidence intervals**: 95% CI for Cp and Cpk
+- **PPM**: Expected defect rate and yield percentage
+- **Box-Cox capability**: Non-normal process capability
+
+#### AI Agent Integration
+- **SKILL.md**: Decision trees for analysis selection
+- **Scenario workflows**: 5 common analysis scenarios
+- **Structured output**: JSON wrapper with status/version/timestamp
+- **Error handling**: Structured JSON error responses
+
+#### Data Handling
+- **Excel multi-sheet**: `--sheet` parameter for all commands
+- **Encoding detection**: Auto-detect UTF-8/GBK/BOM
+- **Delimiter detection**: Auto-detect CSV separators
+- **Dirty data cleaning**: Automatic NaN/Inf/non-numeric handling
+
+### Changed
+- **main.py**: Refactored from 665 lines to 60 lines (command registration center)
+- **commands/__init__.py**: Export all 26 commands
+- **r_engine.py**: Structured JSON error responses
+
+### Testing
+- **Test count**: 95 → 210 (+121%)
+- **Coverage**: 48% → 75% (+27%)
+- **Real data tests**: 6 Excel files with automated tests
+- **New test files**: test_charts.py, test_reports.py, test_command_branches.py, test_real_data.py
+
 ## [0.3.0] - 2026-06-01
 
 ### Added
