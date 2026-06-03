@@ -8,7 +8,7 @@ long_description = (this_directory / "README.md").read_text(encoding="utf-8") if
 
 setup(
     name="stats-cli",
-    version="0.3.0",
+    version="0.4.0",
     description="AI-friendly statistical analysis CLI for manufacturing",
     long_description=long_description,
     long_description_content_type="text/markdown",

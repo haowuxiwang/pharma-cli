@@ -167,6 +167,20 @@ COMMANDS = {
         "input": ["file", "columns", "groups", "method", "n_clusters"],
         "output_fields": ["eigenvalues", "loadings", "clusters", "accuracy"],
         "example": "stats-cli multivariate pca -f data.csv -c x1 -c x2 -c x3"
+    },
+    "timeseries": {
+        "description": "Time series analysis: exponential smoothing, ARIMA, decomposition, ACF/PACF",
+        "category": "advanced",
+        "input": ["values", "file", "analysis_type", "frequency", "order", "n_forecast"],
+        "output_fields": ["analysis_type", "fitted_values", "forecast", "parameters"],
+        "example": "stats-cli timeseries arima -f data.csv -c sales --n-forecast 12"
+    },
+    "power": {
+        "description": "Power analysis and sample size calculation",
+        "category": "hypothesis",
+        "input": ["analysis_type", "effect_size", "alpha", "power", "n"],
+        "output_fields": ["analysis_type", "sample_size", "power", "effect_size"],
+        "example": "stats-cli power t_test --effect-size 0.5 --alpha 0.05 --power 0.80"
     }
 }
 

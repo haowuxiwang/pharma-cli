@@ -13,16 +13,20 @@ from cli.commands.utils import output
 @click.option("--delta", type=float, required=True, help="Equivalence margin")
 def equivalence(test_type, x, y, mu, delta):
     """Equivalence tests: tost, one_sample_tost."""
+    data = {"test_type": test_type, "delta": delta}
+
     if test_type == "tost":
         if not x or not y:
             raise click.UsageError("--x and --y required for two-sample TOST")
-        data = {"test_type": test_type, "x": list(x), "y": list(y), "delta": delta}
+        data["x"] = list(x)
+        data["y"] = list(y)
     elif test_type == "one_sample_tost":
         if not x:
             raise click.UsageError("--x required for one-sample TOST")
         if mu is None:
             raise click.UsageError("--mu required for one-sample TOST")
-        data = {"test_type": test_type, "x": list(x), "mu": mu, "delta": delta}
+        data["x"] = list(x)
+        data["mu"] = mu
 
     result = run_r_file("equivalence.R", data)
     output(result)

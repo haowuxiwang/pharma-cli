@@ -9,6 +9,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+#### Advanced Statistical Methods
+- **Advanced stats**: Added advanced statistical methods module
+
+### Fixed
+- **Audit fixes**: Various code quality and correctness improvements
+
+### Testing
+- **Test count**: 210 -> 385 (+83%)
+- **Coverage**: 75% -> 88% (+13%)
+- **New tests**: utils, correlation, regression, ARIMA, and advanced statistical method tests
+
 #### New Commands (11 new commands, total 26)
 - **explore**: Inspect Excel/CSV file structure (columns, types, missing values)
 - **discover**: List all available commands and JSON schemas
@@ -220,6 +231,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 | Version | Date | Description |
 |---------|------|-------------|
+| 0.4.0 | 2026-06-02 | Advanced stats, audit fixes, coverage to 88% (385 tests) |
 | 0.3.0 | 2026-06-01 | Mixed strategy implementation (charts, statistics, reports) |
 | 0.2.0 | 2026-06-01 | Core features, Excel support, testing |
 | 0.1.0 | 2026-06-01 | Initial release |
@@ -228,15 +240,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Future Releases
 
-### Planned for 0.4.0
-- More control chart types (EWMA, CUSUM charts)
-- Improved regression diagnostics
-- More DOE methods
-- Performance optimization
-
 ### Planned for 0.5.0
 - GUI interface
-- Advanced statistical methods
+- More DOE methods
+- Performance optimization
 - Community features
 - PyPI publication
 

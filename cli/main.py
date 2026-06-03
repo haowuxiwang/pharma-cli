@@ -33,7 +33,7 @@ from cli.commands import (
 
 
 @click.group()
-@click.version_option(version="0.3.0")
+@click.version_option(version="0.4.0")
 @click.option("--plot", "generate_plot", is_flag=True, default=False, help="Generate chart (base64 PNG)")
 @click.option("--interactive", is_flag=True, default=False, help="Generate interactive HTML chart")
 @click.option("--report", "generate_report", is_flag=True, default=False, help="Generate HTML report")

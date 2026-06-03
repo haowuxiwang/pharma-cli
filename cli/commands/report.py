@@ -57,7 +57,7 @@ def report(ctx, values, data_file, column, usl, lsl):
         charts['control_chart'] = create_control_chart(cc_result)
 
         # Capability chart (if limits provided)
-        if usl or lsl and 'capability' in analyses:
+        if (usl or lsl) and 'capability' in analyses:
             charts['capability'] = create_capability_chart(analyses['capability'])
 
     # Generate report

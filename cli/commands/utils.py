@@ -4,7 +4,7 @@ import sys
 import click
 import numpy as np
 from pathlib import Path
-from datetime import datetime
+from datetime import datetime, timezone
 
 from cli.r_engine import run_r_file
 from cli.validators import validate_values
@@ -272,14 +272,12 @@ def output(data):
 
     If data contains an error, formats as error response.
     """
-    from datetime import datetime
-
     # Check if data is an error response
     if isinstance(data, dict) and data.get("error"):
         wrapped = {
             "status": "error",
-            "version": "0.3.0",
-            "timestamp": datetime.utcnow().isoformat() + "Z",
+            "version": "0.4.0",
+            "timestamp": datetime.now(timezone.utc).isoformat(),
             "error": True,
             "error_type": data.get("error_type", "UNKNOWN_ERROR"),
             "message": data.get("message", "Unknown error"),
@@ -289,8 +287,8 @@ def output(data):
     else:
         wrapped = {
             "status": "success",
-            "version": "0.3.0",
-            "timestamp": datetime.utcnow().isoformat() + "Z",
+            "version": "0.4.0",
+            "timestamp": datetime.now(timezone.utc).isoformat(),
             "data": data,
         }
 

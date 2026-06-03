@@ -32,11 +32,11 @@ def control_chart(ctx, chart_type, values, data_file, column, sheet, subgroup_si
         data["sample_size"] = sample_size
     if target is not None:
         data["target"] = target
-    if ewma_lambda:
+    if ewma_lambda is not None:
         data["lambda"] = ewma_lambda
-    if cusum_k:
+    if cusum_k is not None:
         data["k"] = cusum_k
-    if cusum_h:
+    if cusum_h is not None:
         data["h"] = cusum_h
     if ctx.obj.get("generate_plot"):
         data["generate_plot"] = True

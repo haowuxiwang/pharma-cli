@@ -4,7 +4,7 @@ AI-friendly statistical analysis CLI for manufacturing, powered by R.
 
 **Version**: 0.4.0  
 **Commands**: 26  
-**Tests**: 210 (75% coverage)  
+**Tests**: 385 (88% coverage)  
 **JMP/Minitab Coverage**: ~75%
 
 ---
@@ -192,9 +192,9 @@ All commands output JSON:
 python -m pytest tests/ -v
 ```
 
-- **Test Cases**: 210
+- **Test Cases**: 385
 - **Pass Rate**: 100%
-- **Code Coverage**: 75%
+- **Code Coverage**: 88%
 
 ---
 
@@ -211,7 +211,7 @@ pharma-cli/
 │   ├── validators.py     # Input validation
 │   └── commands/         # 26 command modules
 ├── r_scripts/            # 23 R scripts
-├── tests/                # 210 tests
+├── tests/                # 385 tests
 ├── .claude/skills/       # Claude Code Skill
 ├── SKILL.md              # Skill definition
 └── excel/                # Test data

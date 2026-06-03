@@ -1,6 +1,5 @@
 """Design of Experiments command."""
 import json
-import sys
 import click
 
 from cli.r_engine import run_r_file
@@ -14,8 +13,7 @@ from cli.commands.utils import output
 def doe(doe_type, factors, responses_json):
     """Design of Experiments: full_factorial, fractional_factorial, response_surface, taguchi."""
     if not factors:
-        click.echo("Error: --factors required", err=True)
-        sys.exit(1)
+        raise click.UsageError("--factors required")
     factor_list = [json.loads(f) for f in factors]
     data = {"doe_type": doe_type, "factors": factor_list}
     if responses_json:

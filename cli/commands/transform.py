@@ -1,5 +1,4 @@
 """Data transformation command."""
-import json
 import click
 
 from cli.r_engine import run_r_file

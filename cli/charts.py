@@ -361,6 +361,9 @@ def create_box_plot(data: List[float], groups: List[str] = None,
     """
     fig = go.Figure()
 
+    if not data:
+        return pio.to_html(fig, full_html=False)
+
     # Handle single group or multiple groups
     if isinstance(data[0], (list, tuple)):
         # Multiple groups
