@@ -522,3 +522,221 @@ class TestDiscoverCoverageExtended:
         """Test discover with unknown command."""
         result = runner.invoke(main, ['discover', 'nonexistent'])
         assert result.exit_code != 0
+
+
+class TestTimeseriesCoverageExtended:
+    """Tests to improve timeseries.py coverage (80% -> 95%)."""
+
+    def test_arima_with_order(self, runner):
+        """Test ARIMA with explicit order."""
+        result = runner.invoke(main, [
+            'timeseries', 'arima',
+            '-v', '10', '-v', '12', '-v', '11', '-v', '13', '-v', '14',
+            '-v', '12', '-v', '15', '-v', '13', '-v', '16', '-v', '14',
+            '--order', '1', '--order', '1', '--order', '1',
+            '--n-forecast', '3'
+        ])
+        assert result.exit_code == 0
+
+    def test_arima_invalid_order(self, runner):
+        """Test ARIMA with invalid order length."""
+        result = runner.invoke(main, [
+            'timeseries', 'arima',
+            '-v', '10', '-v', '12', '-v', '11',
+            '--order', '1', '--order', '1'
+        ])
+        assert result.exit_code != 0
+        assert 'exactly 3 values' in result.output
+
+    def test_decomposition(self, runner):
+        """Test decomposition analysis."""
+        result = runner.invoke(main, [
+            'timeseries', 'decomposition',
+            '-v', '10', '-v', '12', '-v', '11', '-v', '13', '-v', '14',
+            '-v', '12', '-v', '15', '-v', '13', '-v', '16', '-v', '14',
+            '--frequency', '4'
+        ])
+        assert result.exit_code == 0
+
+    def test_acf_with_max_lag(self, runner):
+        """Test ACF with max lag parameter."""
+        result = runner.invoke(main, [
+            'timeseries', 'acf',
+            '-v', '10', '-v', '11', '-v', '12', '-v', '13', '-v', '14',
+            '--max-lag', '3'
+        ])
+        assert result.exit_code == 0
+
+    def test_from_file(self, runner, tmp_path):
+        """Test timeseries from file."""
+        csv_file = tmp_path / "ts.csv"
+        csv_file.write_text("value\n10\n12\n11\n13\n14\n12\n15\n13\n16\n14\n")
+        result = runner.invoke(main, [
+            'timeseries', 'exp_smoothing', '-f', str(csv_file), '-c', 'value'
+        ])
+        assert result.exit_code == 0
+
+    def test_no_data_error(self, runner):
+        """Test timeseries without data fails."""
+        result = runner.invoke(main, ['timeseries', 'exp_smoothing'])
+        assert result.exit_code != 0
+
+
+class TestAdvancedCoverageExtended:
+    """Tests to improve advanced.py coverage (81% -> 95%)."""
+
+    def test_mixed_effects(self, runner, tmp_path):
+        """Test mixed effects model from file."""
+        data = {
+            "response": [10, 12, 11, 13, 14, 15],
+            "subject": [1, 1, 2, 2, 3, 3],
+            "treatment": ["A", "B", "A", "B", "A", "B"]
+        }
+        json_file = tmp_path / "mixed.json"
+        json_file.write_text(json.dumps(data))
+        result = runner.invoke(main, [
+            'advanced', 'mixed_effects', '-f', str(json_file),
+            '--response', 'response', '--fixed-effects', 'treatment',
+            '--random-effects', 'subject'
+        ])
+        assert result.exit_code == 0
+
+    def test_mixed_effects_no_response_error(self, runner):
+        """Test mixed effects without response fails."""
+        result = runner.invoke(main, ['advanced', 'mixed_effects'])
+        assert result.exit_code != 0
+
+    def test_cox_regression(self, runner, tmp_path):
+        """Test Cox regression from file."""
+        data = {
+            "time": [100, 200, 300, 150, 250],
+            "status": [1, 1, 0, 1, 1],
+            "treatment": ["A", "B", "A", "B", "A"]
+        }
+        json_file = tmp_path / "cox.json"
+        json_file.write_text(json.dumps(data))
+        result = runner.invoke(main, [
+            'advanced', 'cox_regression', '-f', str(json_file),
+            '--time-column', 'time', '--status-column', 'status',
+            '--covariates', 'treatment'
+        ])
+        assert result.exit_code == 0
+
+    def test_cox_regression_no_time_error(self, runner):
+        """Test Cox regression without time column fails."""
+        result = runner.invoke(main, ['advanced', 'cox_regression'])
+        assert result.exit_code != 0
+
+
+class TestNonparametricCoverageExtended:
+    """Tests to improve nonparametric.py coverage (81% -> 95%)."""
+
+    def test_mann_whitney_no_x_error(self, runner):
+        """Test Mann-Whitney without --x fails."""
+        result = runner.invoke(main, [
+            'nonparametric', 'mann_whitney', '--y', '10', '--y', '11'
+        ])
+        assert result.exit_code != 0
+        assert '--x and --y required' in result.output
+
+    def test_kruskal_wallis_no_groups_error(self, runner):
+        """Test Kruskal-Wallis without --groups fails."""
+        result = runner.invoke(main, ['nonparametric', 'kruskal_wallis'])
+        assert result.exit_code != 0
+        assert '--groups required' in result.output
+
+    def test_chi_square_no_observed_error(self, runner):
+        """Test chi-square without --observed fails."""
+        result = runner.invoke(main, ['nonparametric', 'chi_square'])
+        assert result.exit_code != 0
+        assert '--observed required' in result.output
+
+    def test_chi_square_independence_no_matrix_error(self, runner):
+        """Test chi-square independence without matrix fails."""
+        result = runner.invoke(main, [
+            'nonparametric', 'chi_square', '--chi-type', 'independence'
+        ])
+        assert result.exit_code != 0
+        assert '--observed-matrix required' in result.output
+
+    def test_friedman_no_groups_error(self, runner):
+        """Test Friedman without --groups fails."""
+        result = runner.invoke(main, ['nonparametric', 'friedman'])
+        assert result.exit_code != 0
+        assert '--groups required' in result.output
+
+    def test_chi_square_with_expected(self, runner):
+        """Test chi-square with expected frequencies."""
+        result = runner.invoke(main, [
+            'nonparametric', 'chi_square',
+            '--observed', '50', '--observed', '30', '--observed', '20',
+            '--expected', '40', '--expected', '35', '--expected', '25'
+        ])
+        assert result.exit_code == 0
+
+
+class TestControlChartCoverageExtended:
+    """Tests to improve control_chart.py coverage (85% -> 95%)."""
+
+    def test_interactive_chart(self, runner):
+        """Test control chart with --interactive flag."""
+        result = runner.invoke(main, [
+            '--interactive', 'control-chart', 'imr',
+            '-v', '10.2', '-v', '10.5', '-v', '10.1', '-v', '10.3', '-v', '10.4'
+        ])
+        assert result.exit_code == 0
+        data = get_data(result)
+        assert 'interactive_chart' in data
+
+    def test_cusum_chart(self, runner):
+        """Test CUSUM chart."""
+        result = runner.invoke(main, [
+            'control-chart', 'cusum',
+            '-v', '10.2', '-v', '10.5', '-v', '10.1', '-v', '10.3', '-v', '10.4',
+            '--target', '10.3', '--cusum-k', '0.5', '--cusum-h', '5'
+        ])
+        assert result.exit_code == 0
+
+    def test_ewma_chart_lambda_zero(self, runner):
+        """Test EWMA chart with lambda=0."""
+        result = runner.invoke(main, [
+            'control-chart', 'ewma',
+            '-v', '10.2', '-v', '10.5', '-v', '10.1', '-v', '10.3', '-v', '10.4',
+            '--ewma-lambda', '0'
+        ])
+        assert result.exit_code == 0
+
+
+class TestUtilsStdinCoverageExtended:
+    """Tests to improve utils.py stdin and Excel coverage."""
+
+    def test_load_data_stdin_json_with_cleaning(self, runner):
+        """Test load_data from stdin with JSON needing cleaning."""
+        json_data = json.dumps({"values": [10.2, None, 10.5, float('nan'), 10.1]})
+        result = runner.invoke(main, ['descriptive'], input=json_data)
+        assert result.exit_code == 0
+
+    def test_load_data_stdin_plain_text(self, runner):
+        """Test load_data from stdin with plain text."""
+        text_data = "10.2\n10.5\n10.1\n"
+        result = runner.invoke(main, ['descriptive'], input=text_data)
+        assert result.exit_code == 0
+
+    def test_load_excel_with_datetime_column(self, runner, tmp_path):
+        """Test Excel loading with datetime column."""
+        df = pd.DataFrame({
+            'date': pd.to_datetime(['2024-01-01', '2024-01-02', '2024-01-03']),
+            'value': [10.2, 10.5, 10.1]
+        })
+        excel_file = tmp_path / "datetime.xlsx"
+        df.to_excel(excel_file, index=False)
+        result = runner.invoke(main, ['descriptive', '-f', str(excel_file)])
+        assert result.exit_code == 0
+
+    def test_load_excel_no_sheet(self, runner, tmp_path):
+        """Test Excel loading without sheet (default first sheet)."""
+        df = pd.DataFrame({'x': [10.2, 10.5, 10.1]})
+        excel_file = tmp_path / "test.xlsx"
+        df.to_excel(excel_file, index=False)
+        result = runner.invoke(main, ['descriptive', '-f', str(excel_file)])
+        assert result.exit_code == 0
